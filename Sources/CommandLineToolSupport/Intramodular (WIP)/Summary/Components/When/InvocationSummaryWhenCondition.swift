@@ -3,6 +3,8 @@
 //
 
 
+#if os(macOS)
+
 import Foundation
 import Swallow
 
@@ -201,3 +203,5 @@ extension CommandLineToolInvocationSummary.InvocationSummaryWhenCondition where 
         self.init(value, .equals(expected), content, else: elseContent)
     }
 }
+
+#endif

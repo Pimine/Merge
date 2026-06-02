@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 @globalActor
 public actor _ShellActor {
     public actor ActorType {
@@ -12,3 +14,5 @@ public actor _ShellActor {
 
     public static let shared: ActorType = ActorType()
 }
+
+#endif

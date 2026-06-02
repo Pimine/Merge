@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 import Swallow
 
@@ -266,3 +268,5 @@ extension Never: CommandLineToolInvocationSummary.InvocationSummary {
         fatalError(.unavailable)
     }
 }
+
+#endif

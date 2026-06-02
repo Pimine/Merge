@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 @attached(member, names: named(commandName))
 @attached(extension, conformances: CommandLineTool, names: arbitrary)
 public macro CommandLineTool() = #externalMacro(
@@ -54,3 +56,5 @@ public macro _SubcommandTool() = #externalMacro(
 )
 
 public typealias _CommandLineTool_Name = CommandLineToolName
+
+#endif

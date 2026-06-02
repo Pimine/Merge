@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 extension SystemShell {
     public enum _DeveloperError: Swift.Error, Hashable, CustomStringConvertible {
         case borrowedShellOwnedOperation(_OwnedOperation)
@@ -60,3 +62,5 @@ extension SystemShell {
         }
     }
 }
+
+#endif

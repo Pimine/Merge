@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 #if canImport(Darwin)
 import Darwin
 import Foundation
@@ -59,4 +61,6 @@ extension _AsyncProcess.TerminationStatus: CustomStringConvertible, CustomDebugS
         self.description
     }
 }
+#endif
+
 #endif

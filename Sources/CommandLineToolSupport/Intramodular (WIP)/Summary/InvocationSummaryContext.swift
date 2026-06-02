@@ -3,6 +3,8 @@
 //
 
 
+#if os(macOS)
+
 import Foundation
 import OrderedCollections
 import Swallow
@@ -332,3 +334,5 @@ public final class InvocationSummaryContext {
 }
 
 }
+
+#endif

@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import FoundationX
 import Swallow
 
@@ -158,3 +160,5 @@ public actor _StandardInputOutputStreamsBuffer {
         try standardErrorBuffer.toString(encoding: .utf8)
     }
 }
+
+#endif

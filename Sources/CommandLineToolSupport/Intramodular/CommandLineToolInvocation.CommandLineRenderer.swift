@@ -3,6 +3,8 @@
 //
 
 
+#if os(macOS)
+
 import Foundation
 import ShellScripting
 
@@ -68,3 +70,5 @@ extension CommandLineToolInvocation {
         renderer.renderShellCommandString(self)
     }
 }
+
+#endif

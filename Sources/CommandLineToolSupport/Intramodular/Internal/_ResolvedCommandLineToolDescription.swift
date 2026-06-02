@@ -3,6 +3,8 @@
 //
 
 
+#if os(macOS)
+
 import Foundation
 import Swallow
 import Collections
@@ -578,3 +580,5 @@ public struct _ResolvedCommandLineToolDescription: CustomStringConvertible, Cust
         )
     }
 }
+
+#endif

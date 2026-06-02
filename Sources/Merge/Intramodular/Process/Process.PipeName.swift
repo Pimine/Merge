@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import FoundationX
 import Swift
 import System
@@ -79,5 +81,7 @@ extension Process {
         case pipe(Pipe)
     }
 }
+
+#endif
 
 #endif

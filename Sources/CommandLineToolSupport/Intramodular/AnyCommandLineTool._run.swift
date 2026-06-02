@@ -3,6 +3,8 @@
 //
 
 
+#if os(macOS)
+
 import Foundation
 import Merge
 import ShellScripting
@@ -76,3 +78,5 @@ extension AnyCommandLineTool {
         )
     }
 }
+
+#endif

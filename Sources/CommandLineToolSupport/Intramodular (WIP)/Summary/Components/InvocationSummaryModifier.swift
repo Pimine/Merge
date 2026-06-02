@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 import Swallow
 
@@ -262,3 +264,5 @@ public struct _ArgumentApplicabilityModifier<Command: AnyCommandLineTool>: _Invo
     }
 }
 }
+
+#endif

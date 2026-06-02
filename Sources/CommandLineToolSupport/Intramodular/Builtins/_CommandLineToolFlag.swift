@@ -3,6 +3,8 @@
 //
 
 
+#if os(macOS)
+
 import Foundation
 import Swallow
 
@@ -183,3 +185,5 @@ public enum _CommandLineToolFlagInversion: Hashable, Sendable {
         return conversion.prefix + insertionText + "-" + name
     }
 }
+
+#endif

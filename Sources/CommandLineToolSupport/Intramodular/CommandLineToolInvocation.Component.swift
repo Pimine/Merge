@@ -3,6 +3,8 @@
 //
 
 
+#if os(macOS)
+
 import Foundation
 import Collections
 import OrderedCollections
@@ -718,3 +720,5 @@ extension CommandLineToolInvocation.Component.Storage {
         return nil
     }
 }
+
+#endif

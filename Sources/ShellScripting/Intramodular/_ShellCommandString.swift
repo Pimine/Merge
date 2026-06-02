@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 public struct _ShellCommandString: CustomStringConvertible, CustomDebugStringConvertible, Hashable, Sendable, ExpressibleByStringLiteral {
     public var rawValue: String
     public var dialect: _ShellDialect
@@ -28,3 +30,5 @@ public struct _ShellCommandString: CustomStringConvertible, CustomDebugStringCon
         "_ShellCommandString(rawValue: \(String(reflecting: rawValue)), dialect: \(dialect))"
     }
 }
+
+#endif

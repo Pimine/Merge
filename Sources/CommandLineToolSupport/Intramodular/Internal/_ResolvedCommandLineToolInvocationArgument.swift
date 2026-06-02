@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 import Swallow
 
@@ -190,3 +192,5 @@ public struct _AnyResolvedCommandLineToolInvocationArgument: CustomStringConvert
         base
     }
 }
+
+#endif

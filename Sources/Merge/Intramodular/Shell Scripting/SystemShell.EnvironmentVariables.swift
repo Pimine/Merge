@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 
 extension SystemShell {
@@ -179,3 +181,5 @@ extension SystemShell {
 extension SystemShell.EnvironmentVariables: ExpressibleByDictionaryLiteral {
 
 }
+
+#endif

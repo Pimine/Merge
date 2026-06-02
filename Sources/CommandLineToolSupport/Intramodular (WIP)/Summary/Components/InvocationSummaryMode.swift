@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 import Swallow
 
@@ -200,3 +202,5 @@ private func _registerInactiveInvocationModeContent<Command: AnyCommandLineTool>
         location: location
     )
 }
+
+#endif

@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import FoundationX
 
 /// Represents the color support capabilities of a terminal environment
@@ -129,3 +131,5 @@ public enum TerminalColorCapability {
         return patterns.contains(where: { $0.matches("-256(color)?$") }) ? .ansi16 : nil
     }
 }
+
+#endif

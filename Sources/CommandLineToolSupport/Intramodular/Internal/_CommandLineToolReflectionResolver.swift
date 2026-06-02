@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 import Runtime
 import Swallow
@@ -112,3 +114,5 @@ struct _CommandLineToolReflectionResolver {
         }
     }
 }
+
+#endif

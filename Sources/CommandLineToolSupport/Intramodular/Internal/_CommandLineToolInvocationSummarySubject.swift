@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 
 @available(macOS 11.0, *)
@@ -84,3 +86,5 @@ extension CommandLineTool {
         preconditionFailure("Unable to resolve invocation summary subject \(subject) for \(type(of: self)).")
     }
 }
+
+#endif

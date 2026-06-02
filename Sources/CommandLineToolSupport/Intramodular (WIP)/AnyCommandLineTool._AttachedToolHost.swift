@@ -3,6 +3,8 @@
 //
 
 
+#if os(macOS)
+
 import Foundation
 
 extension AnyCommandLineTool {
@@ -128,3 +130,5 @@ extension AnyCommandLineTool._AttachedToolHost {
         }
     }
 }
+
+#endif

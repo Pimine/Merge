@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 import Swallow
 
@@ -67,3 +69,5 @@ extension Int: CLT.EnvironmentVariableValue { public var environmentVariableStri
 extension String: CLT.EnvironmentVariableValue { public var environmentVariableStringValue: String? { self } }
 
 extension URL: CLT.EnvironmentVariableValue { public var environmentVariableStringValue: String? { path } }
+
+#endif

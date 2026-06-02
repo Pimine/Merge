@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 
 extension SystemShell {
@@ -111,3 +113,5 @@ extension SystemShell.StandardStreamMirroring {
         }
     }
 }
+
+#endif

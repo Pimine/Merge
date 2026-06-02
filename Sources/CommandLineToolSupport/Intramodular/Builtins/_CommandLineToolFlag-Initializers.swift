@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 import Swallow
 
@@ -218,3 +220,5 @@ extension _CommandLineToolFlag {
         fatalError(.unavailable)
     }
 }
+
+#endif

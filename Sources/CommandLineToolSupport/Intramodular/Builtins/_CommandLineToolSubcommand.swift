@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 import Swallow
 
@@ -100,3 +102,5 @@ public struct _CommandLineToolSubcommand<Parent, Command>: _CommandLineToolSubco
         self.command = .init(name: name)
     }
 }
+
+#endif

@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 import Swallow
 
@@ -121,4 +123,6 @@ extension Process.TerminationReason {
         }
     }
 }
+#endif
+
 #endif

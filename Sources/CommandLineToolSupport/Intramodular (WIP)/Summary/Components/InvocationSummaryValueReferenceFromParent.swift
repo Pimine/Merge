@@ -3,6 +3,8 @@
 //
 
 
+#if os(macOS)
+
 import Foundation
 import Swallow
 
@@ -217,3 +219,5 @@ private func _requireInvocationSummaryParent<Parent: AnyCommandLineTool, Command
 
     return parent
 }
+
+#endif

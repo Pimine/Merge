@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 
 extension _CommandLineToolParameter {
@@ -241,3 +243,5 @@ extension _CommandLineToolParameter {
         )
     }
 }
+
+#endif

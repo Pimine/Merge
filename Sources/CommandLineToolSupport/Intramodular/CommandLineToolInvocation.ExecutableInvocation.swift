@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 
 @available(macOS 11.0, *)
@@ -101,3 +103,5 @@ extension CommandLineToolInvocation {
         )
     }
 }
+
+#endif

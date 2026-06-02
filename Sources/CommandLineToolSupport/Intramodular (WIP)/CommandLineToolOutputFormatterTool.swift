@@ -3,6 +3,8 @@
 //
 
 
+#if os(macOS)
+
 import Foundation
 import OrderedCollections
 
@@ -119,3 +121,5 @@ extension _CommandLineToolOutputFormatterTool_Semantics {
 @available(watchOS, unavailable)
 @available(*, deprecated, renamed: "_CommandLineToolOutputFormatterTool_Semantics")
 public typealias CommandLineToolOutputFormattingSemantics = _CommandLineToolOutputFormatterTool_Semantics
+
+#endif

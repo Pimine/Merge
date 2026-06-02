@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 import Swallow
 
@@ -138,3 +140,5 @@ public struct _CommandLineToolParameter<WrappedValue>: _CommandLineToolParameter
         self.defaultPosition = .local
     }
 }
+
+#endif

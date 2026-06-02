@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Combine
 import Foundation
 import Swallow
@@ -154,3 +156,5 @@ extension SystemShell {
         }
     }
 }
+
+#endif

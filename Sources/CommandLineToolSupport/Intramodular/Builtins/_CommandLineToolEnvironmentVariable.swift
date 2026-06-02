@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 import Swallow
 
@@ -74,3 +76,4 @@ public struct _CommandLineTool_DefaultEnvironmentVariables {
     
 }
 
+#endif

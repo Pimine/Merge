@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Combine
 import Diagnostics
 import Foundation
@@ -146,4 +148,6 @@ extension _AsyncProcess {
         fatalError(.unavailable)
     }
 }
+#endif
+
 #endif

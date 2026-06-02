@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Combine
 import Foundation
 import Swallow
@@ -109,3 +111,5 @@ extension SystemShell.Environment {
         Self(launchPath: nil, deriveArguments: { _ in [] })
     }
 }
+
+#endif

@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import FoundationX
 import SwallowMacrosClient
 import Swift
@@ -250,3 +252,5 @@ extension OSAScriptProcess {
         case executablePathMissing
     }
 }
+
+#endif

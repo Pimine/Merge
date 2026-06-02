@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 import OrderedCollections
 
@@ -144,3 +146,5 @@ extension _CommandLineToolExecutionPlan.StandardStreamWiring {
         }
     }
 }
+
+#endif

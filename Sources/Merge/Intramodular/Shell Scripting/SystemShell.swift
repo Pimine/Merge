@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Combine
 import Diagnostics
 import Foundation
@@ -241,3 +243,5 @@ extension SystemShell {
         }
     }
 }
+
+#endif

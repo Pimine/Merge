@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 import Swift
 
@@ -116,3 +118,5 @@ extension _UnsafeAsyncStandardOutputOrErrorPipeBuffer {
         case stderr
     }
 }
+
+#endif

@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 import Swallow
 import Merge
@@ -118,3 +120,5 @@ public class GenericSubcommand<Parent, Command>: AnyCommandLineTool, CommandLine
         }
     }
 }
+
+#endif

@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 import Merge
 
@@ -213,3 +215,5 @@ extension CommandLineTool {
         return copy
     }
 }
+
+#endif

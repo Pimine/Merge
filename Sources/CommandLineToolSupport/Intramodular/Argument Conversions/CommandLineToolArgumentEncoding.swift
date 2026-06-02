@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 
 public enum MultiValueParameterEncodingStrategy: Hashable, Sendable {
@@ -33,3 +35,5 @@ extension _CommandLineToolOptionKeyConversion {
 
     public func argumentKey(for name: String) -> String { prefix + name }
 }
+
+#endif

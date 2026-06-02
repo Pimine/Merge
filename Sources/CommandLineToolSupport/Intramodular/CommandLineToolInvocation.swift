@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Foundation
 
 /// A structured representation of a rendered command-line tool invocation.
@@ -286,3 +288,5 @@ extension CommandLineTool {
         }
     }
 }
+
+#endif

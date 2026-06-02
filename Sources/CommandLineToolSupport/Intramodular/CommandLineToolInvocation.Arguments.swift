@@ -3,6 +3,8 @@
 //
 
 
+#if os(macOS)
+
 import Foundation
 
 @available(macOS 11.0, *)
@@ -300,3 +302,5 @@ extension CommandLineToolInvocation {
         Self(components: self.components + components.elements)
     }
 }
+
+#endif

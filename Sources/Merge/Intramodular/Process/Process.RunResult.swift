@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import FoundationX
 import Swallow
 
@@ -146,5 +148,7 @@ extension Process {
     @available(*, deprecated, renamed: "Process.RunResult")
     public typealias AllOutput = Process.RunResult
 }
+
+#endif
 
 #endif

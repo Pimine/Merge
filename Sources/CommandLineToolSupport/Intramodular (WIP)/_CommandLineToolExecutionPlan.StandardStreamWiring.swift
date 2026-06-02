@@ -3,6 +3,8 @@
 //
 
 
+#if os(macOS)
+
 import Foundation
 import OrderedCollections
 import ShellScripting
@@ -309,3 +311,5 @@ extension _CommandLineToolExecutionPlan.StandardStreamWiring {
         )
     }
 }
+
+#endif

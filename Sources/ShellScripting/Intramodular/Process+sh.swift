@@ -4,6 +4,8 @@
 
 #if os(macOS)
 
+#if os(macOS)
+
 import Foundation
 import Merge
 internal import Swallow
@@ -450,4 +452,6 @@ enum _SystemShellExecutionError: CustomStringConvertible {
 extension _SystemShellExecutionError: LocalizedError {
     
 }
+#endif
+
 #endif

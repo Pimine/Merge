@@ -3,6 +3,8 @@
 //
 
 
+#if os(macOS)
+
 import Foundation
 import Swallow
 
@@ -298,3 +300,5 @@ extension CommandLineToolInvocationSummary.InvocationSummaryValueReference: Comm
         }
     }
 }
+
+#endif

@@ -3,6 +3,8 @@
 //
 
 
+#if os(macOS)
+
 import Foundation
 import Swallow
 
@@ -194,3 +196,5 @@ extension CommandLineToolInvocationSummary.InvocationSummaryCondition {
         .not(condition)
     }
 }
+
+#endif

@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 import Combine
 import Foundation
 import Merge
@@ -107,3 +109,5 @@ open class AnyCommandLineTool: Logging, ObjectDidChangeObservableObject {
         }
     }
 }
+
+#endif

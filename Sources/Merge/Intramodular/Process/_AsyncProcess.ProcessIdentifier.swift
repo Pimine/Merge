@@ -2,6 +2,8 @@
 // Copyright (c) Vatsal Manot
 //
 
+#if os(macOS)
+
 #if canImport(Darwin)
 import Darwin
 
@@ -43,3 +45,5 @@ extension _AsyncProcess.ProcessIdentifier: CustomStringConvertible, CustomDebugS
 }
 
 #endif // canImport(Darwin)
+
+#endif
