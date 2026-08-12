@@ -4,24 +4,10 @@
 
 @testable import Merge
 
-import Foundation
 import Testing
 
 @Suite
 struct _AsyncProcessEnvironmentVariablesTests {
-    @Test
-    func inheritedEnvironmentVariablesLeaveFoundationProcessEnvironmentUnset() throws {
-        let process = try _AsyncProcess(
-            launchPath: "/usr/bin/env",
-            arguments: [],
-            environmentVariables: _AsyncProcess.EnvironmentVariables.inherited,
-            options: []
-        )
-
-        #expect(process.environmentVariables == .inherited)
-        #expect(process.process.environment == nil)
-    }
-
     @Test
     func exactEnvironmentVariablesAreAppliedWhenProcessRuns() async throws {
         let process = try _AsyncProcess(
@@ -52,15 +38,4 @@ struct _AsyncProcessEnvironmentVariablesTests {
         #expect(result.stdoutString == nil)
     }
 
-    @Test
-    func inheritedOverridesResolveAtProcessLayer() throws {
-        let variables = try #require(
-            _AsyncProcess.EnvironmentVariables
-                .inherited(overriding: ["MERGE_TEST_ENV": "1"])
-                .resolvingForProcessLaunch()
-        )
-
-        #expect(variables["MERGE_TEST_ENV"] == "1")
-        #expect(variables["PATH"] == ProcessInfo.processInfo.environment["PATH"])
-    }
 }

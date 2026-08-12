@@ -54,16 +54,68 @@ public struct CommandLineToolInvocation: CustomStringConvertible, CustomDebugStr
             self.init(storage: .string(value))
         }
         
+        @available(*, deprecated, message: "Use .path(_:) instead.")
         public init(path value: String) {
             self.init(storage: .path(value))
         }
         
+        @available(*, deprecated, message: "Use .path(_:) instead.")
         public init(fileURL: URL) {
-            self.init(path: fileURL.path)
+            self.init(storage: .path(fileURL.path))
         }
         
+        @available(*, deprecated, message: "Use .rawBytes(_:) instead.")
         public init(rawBytes: [UInt8]) {
             self.init(storage: .rawBytes(rawBytes))
+        }
+
+        /// Creates an argument from text that should be passed as one argv value.
+        public static func string(
+            _ value: String
+        ) -> Self {
+            Self(value)
+        }
+
+        /// Creates an argument from the raw value of a string-backed domain type.
+        public static func string<Value>(
+            _ value: Value
+        ) -> Self where Value: RawRepresentable, Value.RawValue == String {
+            Self(value.rawValue)
+        }
+
+        /// Creates a file-system path argument.
+        ///
+        /// Path arguments remain distinct from ordinary strings when invocation
+        /// components are classified. In particular, a path beginning with `-`
+        /// is not mistaken for an option.
+        public static func path(
+            _ value: String
+        ) -> Self {
+            Self(storage: .path(value))
+        }
+
+        /// Creates a file-system path argument from a file URL.
+        public static func path(
+            _ fileURL: URL
+        ) -> Self {
+            Self(storage: .path(fileURL.path))
+        }
+
+        /// Creates an argument containing a URL's serialized representation.
+        ///
+        /// Use ``path(_:)`` for file-system paths. This factory intentionally
+        /// preserves the URL scheme, authority, query, and fragment.
+        public static func url(
+            _ url: URL
+        ) -> Self {
+            Self(url.absoluteString)
+        }
+
+        /// Creates an argument from bytes that are not required to be valid UTF-8.
+        public static func rawBytes(
+            _ value: [UInt8]
+        ) -> Self {
+            Self(storage: .rawBytes(value))
         }
         
         public init(stringLiteral value: String) {

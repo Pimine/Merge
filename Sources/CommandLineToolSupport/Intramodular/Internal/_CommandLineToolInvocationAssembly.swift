@@ -39,7 +39,7 @@ struct _CommandLineToolInvocationAssembly {
         _ root: AnyCommandLineTool,
         to result: inout [CommandLineToolInvocation.Component]
     ) throws {
-        result.append(.executable(CommandLineToolInvocation.Argument(root.requireCommandName().rawValue)))
+        result.append(.executable(.string(root.requireCommandName().rawValue)))
         try result.append(
             contentsOf: root._defaultInvocationComponents(
                 context: context,
@@ -54,7 +54,7 @@ struct _CommandLineToolInvocationAssembly {
         for (offset, command) in chain.dropFirst().enumerated() {
             let parent = chain[offset]
 
-            result.append(.subcommand(CommandLineToolInvocation.Argument(command.requireCommandName().rawValue)))
+            result.append(.subcommand(.string(command.requireCommandName().rawValue)))
             try result.append(
                 contentsOf: parent._defaultInvocationComponents(
                     context: context,

@@ -16,7 +16,7 @@ private extension CommandLineToolInvocation.Argument {
         _resolvedInvocationScalar value: Any
     ) {
         if let url = value as? URL {
-            self.init(fileURL: url)
+            self = .path(url)
         } else if let value = value as? any CLT.ArgumentValueConvertible {
             self.init(_argumentValueConvertible: value)
         } else {
@@ -28,7 +28,7 @@ private extension CommandLineToolInvocation.Argument {
         _argumentValueConvertible value: any CLT.ArgumentValueConvertible
     ) {
         if let url = value as? URL {
-            self.init(fileURL: url)
+            self = .path(url)
         } else {
             self.init(value.argumentValue)
         }
@@ -374,7 +374,7 @@ public struct _ResolvedCommandLineToolDescription: CustomStringConvertible, Cust
                 return []
             }
             
-            let key = CommandLineToolInvocation.Argument(conversion.argumentKey(for: name))
+            let key = CommandLineToolInvocation.Argument.string(conversion.argumentKey(for: name))
             
             if let multiValueEncoding {
                 let values = _ResolvedInvocationValueLowering.arguments(from: value)
@@ -443,13 +443,13 @@ public struct _ResolvedCommandLineToolDescription: CustomStringConvertible, Cust
             
             if let inversion {
                 return [
-                    .flag(CommandLineToolInvocation.Argument(inversion.argument(conversion: conversion, name: name, value: isOn)))
+                    .flag(.string(inversion.argument(conversion: conversion, name: name, value: isOn)))
                 ]
             }
             
             if defaultBooleanValue != isOn {
                 return [
-                    .flag(CommandLineToolInvocation.Argument("\(conversion.argumentKey(for: name))"))
+                    .flag(.string("\(conversion.argumentKey(for: name))"))
                 ]
             } else {
                 return []
@@ -476,13 +476,13 @@ public struct _ResolvedCommandLineToolDescription: CustomStringConvertible, Cust
             
             if isClustered {
                 return [
-                    .flag(CommandLineToolInvocation.Argument("\(conversion.argumentKey(for: (0..<count).map({ _ in name }).joined()))"))
+                    .flag(.string("\(conversion.argumentKey(for: (0..<count).map({ _ in name }).joined()))"))
                 ]
             }
             
             return (0..<count)
                 .map { _ in "\(conversion.argumentKey(for: name))" }
-                .map { InvocationComponent.flag(CommandLineToolInvocation.Argument($0)) }
+                .map { InvocationComponent.flag(.string($0)) }
         }
     }
     
@@ -507,7 +507,7 @@ public struct _ResolvedCommandLineToolDescription: CustomStringConvertible, Cust
             if let values = Self.optionKeyConvertibleValues(from: value) {
                 return values
                     .map { $0.conversion.argumentKey(for: $0.name) }
-                    .map { InvocationComponent.flag(CommandLineToolInvocation.Argument($0)) }
+                    .map { InvocationComponent.flag(.string($0)) }
             } else {
                 return []
             }

@@ -277,10 +277,7 @@ extension _CommandLineToolExecutionPlan {
     ) async throws -> _CommandLineToolExecutionRecord<Tool> {
         try standardStreamWiring?.validate()
         
-        let startedAt = Date()
-        
-        do {
-            let (record, shellScopeID) = try await shell.withConfiguration(applying: configurationDifferences) { shell in
+        return try await shell.withConfiguration(applying: configurationDifferences) { shell in
                 let processResult: _ProcessRunResult
                 
                 switch source {
@@ -293,70 +290,13 @@ extension _CommandLineToolExecutionPlan {
                         processResult = try await shell.run(command: commandString, input: standardInput)
                 }
                 
-                return (
-                    _CommandLineToolExecutionRecord(
-                        tool: tool,
-                        source: source,
-                        processResult: processResult,
-                        selectedToolInvocation: selectedToolInvocation
-                    ),
-                    shell._shellScopeID
+                return _CommandLineToolExecutionRecord(
+                    tool: tool,
+                    source: source,
+                    processResult: processResult,
+                    selectedToolInvocation: selectedToolInvocation
                 )
             }
-            
-            await tool._internalState._appendExecutionAttempt(
-                _makeExecutionAttempt(
-                    startedAt: startedAt,
-                    finishedAt: Date(),
-                    shellScopeID: shellScopeID,
-                    result: .success(record._erasingTool())
-                )
-            )
-            
-            return record
-        } catch {
-            await tool._internalState._appendExecutionAttempt(
-                _makeExecutionAttempt(
-                    startedAt: startedAt,
-                    finishedAt: Date(),
-                    shellScopeID: shell._shellScopeID,
-                    result: .failure(error)
-                )
-            )
-            
-            throw error
-        }
-    }
-    
-    private func _makeExecutionAttempt(
-        startedAt: Date,
-        finishedAt: Date,
-        shellScopeID: SystemShell._ShellScope.ID?,
-        result: Result<_CommandLineToolExecutionRecord<AnyCommandLineTool>, Error>
-    ) -> AnyCommandLineTool._ExecutionAttempt {
-        AnyCommandLineTool._ExecutionAttempt(
-            startedAt: startedAt,
-            finishedAt: finishedAt,
-            shellScopeID: shellScopeID,
-            source: source,
-            result: result
-        )
-    }
-}
-
-@available(macOS 11.0, *)
-@available(iOS, unavailable)
-@available(macCatalyst, unavailable)
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-extension _CommandLineToolExecutionRecord {
-    fileprivate func _erasingTool() -> _CommandLineToolExecutionRecord<AnyCommandLineTool> {
-        _CommandLineToolExecutionRecord<AnyCommandLineTool>(
-            tool: tool,
-            source: source,
-            processResult: processResult,
-            selectedToolInvocation: selectedToolInvocation
-        )
     }
 }
 

@@ -1,7 +1,6 @@
 #if os(macOS)
 
 import CommandLineToolSupport
-import Combine
 import Foundation
 import Merge
 import ShellScripting
@@ -56,32 +55,6 @@ struct CommandLineToolSupportCompatibilityTests {
         #expect(record.stdoutString == "raw-shell")
     }
 
-    @Test("AnyCommandLineTool _run(command:) accepts typed shell command strings")
-    func anyCommandLineToolRunCommandAcceptsTypedShellCommandStrings() async throws {
-        let record = try await LegacyAnyCommandLineToolCompatibilityTool()._run(
-            command: _ShellCommandString(rawValue: "printf typed-shell", dialect: .posix),
-            applying: .standardStreamMirroring(.disabled)
-        )
-
-        #expect(record.source.shellCommandString?.rawValue == "printf typed-shell")
-        #expect(record.source.shellCommandString?.dialect == .posix)
-        #expect(record.commandLine == "printf typed-shell")
-        #expect(record.stdoutString == "typed-shell")
-    }
-
-    @Test("AnyCommandLineTool _run(command:) does not require CommandLineTool conformance")
-    func anyCommandLineToolRunCommandDoesNotRequireCommandLineToolConformance() async throws {
-        let tool = LegacyAnyCommandLineToolCompatibilityTool()
-        let record = try await tool._run(
-            command: "printf raw-base",
-            applying: .standardStreamMirroring(.disabled)
-        )
-
-        #expect(record.tool === tool)
-        #expect(record.commandLine == "printf raw-base")
-        #expect(record.stdoutString == "raw-base")
-    }
-
     @Test("AnyCommandLineTool _run(command:) applies scoped SystemShell configuration")
     func anyCommandLineToolRunCommandAppliesScopedSystemShellConfiguration() async throws {
         let directoryURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
@@ -107,61 +80,6 @@ struct CommandLineToolSupportCompatibilityTests {
 
         #expect(record.commandLine == "pwd")
         #expect(record.stdoutString == directoryURL.path)
-    }
-
-    @Test("AnyCommandLineTool records successful raw command execution attempts")
-    func anyCommandLineToolRecordsSuccessfulRawCommandExecutionAttempts() async throws {
-        let tool = LegacyAnyCommandLineToolCompatibilityTool()
-        let record = try await tool._run(
-            command: "printf attempt-record",
-            applying: .standardStreamMirroring(.disabled)
-        )
-        let attempts = await tool._internalState._executionAttempts
-        let attempt = try #require(attempts.first)
-
-        #expect(attempts.count == 1)
-        #expect(attempt.shellScopeID != nil)
-        #expect(attempt.source.commandLine == record.commandLine)
-        #expect(attempt.finishedAt >= attempt.startedAt)
-
-        switch attempt.result {
-            case .success(let recorded):
-                #expect(recorded.commandLine == "printf attempt-record")
-                #expect(recorded.stdoutString == "attempt-record")
-            case .failure(let error):
-                Issue.record("Expected a successful execution attempt, got \(String(reflecting: error)).")
-        }
-    }
-
-    @Test("AnyCommandLineTool records failed raw command execution attempts")
-    func anyCommandLineToolRecordsFailedRawCommandExecutionAttempts() async throws {
-        let tool = LegacyAnyCommandLineToolCompatibilityTool()
-
-        do {
-            _ = try await tool._run(
-                command: "printf should-not-run",
-                applying: [
-                    .standardStreamMirroring(.disabled),
-                    .standardStreamMirroring(.terminal)
-                ]
-            )
-            Issue.record("Expected conflicting configuration differences to throw.")
-        } catch {
-            let attempts = await tool._internalState._executionAttempts
-            let attempt = try #require(attempts.first)
-
-            #expect(attempts.count == 1)
-            #expect(attempt.shellScopeID != nil)
-            #expect(attempt.source.commandLine == "printf should-not-run")
-            #expect(attempt.finishedAt >= attempt.startedAt)
-
-            switch attempt.result {
-                case .success(let record):
-                    Issue.record("Expected a failed execution attempt, got \(record.debugDescription).")
-                case .failure:
-                    break
-            }
-        }
     }
 
     @Test("Borrowed SystemShell rejects owned process teardown")
@@ -232,95 +150,6 @@ struct CommandLineToolSupportCompatibilityTests {
         )
     }
 
-    @Test("AnyCommandLineTool tracks borrowed shell scopes")
-    func anyCommandLineToolTracksBorrowedShellScopes() async throws {
-        let tool = LegacyAnyCommandLineToolCompatibilityTool()
-        var shellState: SystemShell._InternalState?
-
-        try await tool.withSystemShell { shell in
-            shellState = shell._internalState
-
-            let toolScope = try #require(
-                await tool._internalState._activeShellScopes.first,
-                "The command-line tool should track the active borrowed shell scope."
-            )
-            let shellScope = try #require(
-                await shell._internalState._activeShellScopes.first,
-                "The borrowed shell state should track its active root scope."
-            )
-
-            #expect(toolScope.id == shellScope.id)
-            #expect(toolScope.kind == .commandLineToolLease)
-            #expect(toolScope.parentID == nil)
-            #expect(toolScope.rootID == toolScope.id)
-
-            try await shell.withConfiguration(
-                applying: SystemShell.Configuration.Difference.standardStreamMirroring(.disabled)
-            ) { childShell in
-                let childScopeID = try #require(
-                    childShell._shellScopeID,
-                    "A child shell derived from the borrowed root should have a scope ID."
-                )
-                let childScope = try #require(
-                    await shell._internalState._shellScope(id: childScopeID),
-                    "The shell state should track child configuration scopes."
-                )
-
-                #expect(childScope.kind == .configurationScope)
-                #expect(childScope.parentID == shellScope.id)
-                #expect(childScope.rootID == shellScope.id)
-                #expect(childScope.status == .active)
-            }
-
-            let completedChildren = await shell._internalState._completedShellScopes.filter {
-                $0.kind == .configurationScope && $0.parentID == shellScope.id
-            }
-
-            #expect(
-                completedChildren.count == 1,
-                "Configuration child scopes should be completed when the scoped operation returns."
-            )
-        }
-
-        #expect(await tool._internalState._activeShellScopes.isEmpty)
-
-        let completedToolScope = try #require(
-            await tool._internalState._completedShellScopes.first,
-            "The command-line tool should retain completed borrowed shell scope history."
-        )
-        let completedShellScope = try #require(
-            await shellState?._completedShellScopes.first,
-            "The shell state should retain completed root scope history."
-        )
-
-        #expect(completedToolScope.id == completedShellScope.id)
-        #expect(completedToolScope.status == .completed)
-    }
-
-    @Test("AnyCommandLineTool shell scope tracking is observable")
-    func anyCommandLineToolShellScopeTrackingIsObservable() async throws {
-        let tool = LegacyAnyCommandLineToolCompatibilityTool()
-        var cancellable: AnyCancellable?
-
-        await withCheckedContinuation { continuation in
-            cancellable = tool.objectDidChange.prefix(1).sink {
-                continuation.resume()
-            }
-
-            Task {
-                try await tool.withSystemShell { _ in
-
-                }
-            }
-        }
-
-        withExtendedLifetime(cancellable) {}
-        #expect(
-            await !tool._internalState._shellScopes.isEmpty,
-            "Observing the command-line tool should not require polling shell state."
-        )
-    }
-
     @Test("Killing an AnyCommandLineTool with no active shells makes the instance unusable")
     func killingAnyCommandLineToolWithNoActiveShellsMakesInstanceUnusable() async throws {
         let tool = LegacyAnyCommandLineToolCompatibilityTool()
@@ -354,7 +183,7 @@ struct CommandLineToolSupportCompatibilityTests {
             }
         }
 
-        while await tool._internalState._activeShellSessions.isEmpty {
+        while shellState == nil {
             try await Task.sleep(.milliseconds(10))
         }
 
@@ -367,15 +196,7 @@ struct CommandLineToolSupportCompatibilityTests {
         _ = try await task.value
 
         #expect(await tool._internalState._lifecycleStatus == .killed)
-        #expect(await tool._internalState._activeShellScopes.isEmpty)
         #expect(await shellState?.runningProcesses.isEmpty == true)
-
-        let completedScope = try #require(
-            await tool._internalState._completedShellScopes.first,
-            "The killed command-line tool should complete its active shell scope."
-        )
-
-        #expect(completedScope.status == .completed)
     }
 }
 

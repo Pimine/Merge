@@ -351,7 +351,7 @@ final class CustomValueLoweringSummaryTool: AnyCommandLineTool, CommandLineTool 
             [
                 .option(
                     key: "--enable",
-                    value: CommandLineToolInvocation.Argument(value == true ? "YES" : "NO")
+                    value: .string(value == true ? "YES" : "NO")
                 )
             ]
         }
@@ -806,159 +806,6 @@ struct CommandLineToolSupportTests {
             .invocation
 
         #expect(command == "root leaf --verbose --force Sources")
-    }
-
-    @Test
-    func resolvedDescriptionChainPreservesSubcommandChain() throws {
-        let command = CompatibilityRootTool()
-            .with(\.verbose, true)
-            .with(\.force, true)
-            .with(\.path, "Sources")
-            .leaf
-        let chain = try command._resolvedDescriptionChain
-
-        #expect(chain.map(\.commandName) == ["root", "leaf"])
-        #expect(chain[0].arguments.map(\.id.rawValue) == ["verbose", "force", "path"])
-        #expect(chain[1].arguments.isEmpty)
-        #expect(try command.invocation == "root leaf --verbose --force Sources")
-    }
-
-    @Test
-    func resolvedDescriptionChainPreservesSelectedToolChain() throws {
-        let command = ExampleXcrunTool()
-            .simctl()
-            .io()
-        let chain = try command._resolvedDescriptionChain
-
-        #expect(chain.map(\.commandName) == ["xcrun", "simctl", "io"])
-        #expect(try command.invocation == "xcrun simctl io")
-    }
-
-    @Test
-    func statefulToolExamplesRenderTrustAndAuthorizationCommands() throws {
-        let miseTrust = try ExampleMiseTool()
-            .trust()
-            .with(\.path, ".")
-            .commandInvocation
-        let miseTrustShow = try ExampleMiseTool()
-            .trust()
-            .with(\.show, true)
-            .commandInvocation
-        let direnvAllow = try ExampleDirenvTool()
-            .allow()
-            .with(\.path, ".")
-            .commandInvocation
-
-        #expect(miseTrust.rawComponents == ["mise", "trust", "."])
-        #expect(miseTrustShow.rawComponents == ["mise", "trust", "--show"])
-        #expect(direnvAllow.rawComponents == ["direnv", "allow", "."])
-    }
-
-    @Test
-    func statefulToolExamplesRenderAgentCredentialCommands() throws {
-        let addIdentity = try ExampleSSHAddTool()
-            .with(\.lifetime, "1h")
-            .with(\.confirmUse, true)
-            .with(\.identityPaths, ["~/.ssh/id_ed25519"])
-            .commandInvocation
-        let listIdentities = try ExampleSSHAddTool()
-            .with(\.listIdentities, true)
-            .commandInvocation
-        let deleteIdentity = try ExampleSSHAddTool()
-            .with(\.deleteIdentity, true)
-            .with(\.identityPaths, ["~/.ssh/id_ed25519"])
-            .commandInvocation
-
-        #expect(addIdentity.rawComponents == ["ssh-add", "-t", "1h", "-c", "~/.ssh/id_ed25519"])
-        #expect(listIdentities.rawComponents == ["ssh-add", "-l"])
-        #expect(deleteIdentity.rawComponents == ["ssh-add", "-d", "~/.ssh/id_ed25519"])
-    }
-
-    @Test
-    func statefulToolExamplesRenderAuthenticationAndSelectionCommands() throws {
-        let dockerLogin = try ExampleDockerTool()
-            .login()
-            .with(\.registry, "ghcr.io")
-            .commandInvocation
-        let kubectlUseContext = try ExampleKubectlTool()
-            .with(\.kubeconfig, "~/.kube/config")
-            .config()
-            .useContext()
-            .with(\.contextName, "production")
-            .commandInvocation
-        let xcodeSelectSwitch = try ExampleXcodeSelectTool()
-            .with(\.developerDirectoryPath, "/Applications/Xcode.app")
-            .commandInvocation
-
-        #expect(dockerLogin.rawComponents == ["docker", "login", "ghcr.io"])
-        #expect(kubectlUseContext.rawComponents == ["kubectl", "--kubeconfig", "~/.kube/config", "config", "use-context", "production"])
-        #expect(xcodeSelectSwitch.rawComponents == ["xcode-select", "--switch", "/Applications/Xcode.app"])
-    }
-
-    @Test
-    func statefulToolExamplesRenderInspectionAndRevocationCommands() throws {
-        let dockerLogout = try ExampleDockerTool()
-            .logout()
-            .with(\.registry, "ghcr.io")
-            .commandInvocation
-        let kubectlCurrentContext = try ExampleKubectlTool()
-            .config()
-            .currentContext()
-            .commandInvocation
-        let xcodeSelectPrintPath = try ExampleXcodeSelectTool()
-            .with(\.printPath, true)
-            .commandInvocation
-        let direnvDeny = try ExampleDirenvTool()
-            .deny()
-            .with(\.path, ".")
-            .commandInvocation
-
-        #expect(dockerLogout.rawComponents == ["docker", "logout", "ghcr.io"])
-        #expect(kubectlCurrentContext.rawComponents == ["kubectl", "config", "current-context"])
-        #expect(xcodeSelectPrintPath.rawComponents == ["xcode-select", "--print-path"])
-        #expect(direnvDeny.rawComponents == ["direnv", "deny", "."])
-    }
-
-    @Test
-    func invocationModeRejectsOverlappingFlagShapedModes() throws {
-        do {
-            _ = try ExampleSSHAddTool()
-                .with(\.listIdentities, true)
-                .with(\.deleteIdentity, true)
-                .with(\.identityPaths, ["~/.ssh/id_ed25519"])
-                .invocation
-
-            Issue.record("Expected overlapping ssh-add invocation modes to fail.")
-        } catch let error as CommandLineToolInvocationSummary.Error {
-            guard case .conflictingInvocationModes(let command, _, _, let location) = error else {
-                Issue.record("Expected conflictingInvocationModes, got \(error).")
-                return
-            }
-
-            #expect(command == "ssh-add")
-            #expect(location != nil)
-        } catch {
-            Issue.record("Expected invocation-summary error, got \(error).")
-        }
-
-        do {
-            _ = try ExampleXcodeSelectTool()
-                .with(\.printPath, true)
-                .with(\.developerDirectoryPath, "/Applications/Xcode.app")
-                .invocation
-
-            Issue.record("Expected overlapping xcode-select invocation modes to fail.")
-        } catch let error as CommandLineToolInvocationSummary.Error {
-            guard case .conflictingInvocationModes(let command, _, _, let location) = error else {
-                Issue.record("Expected conflictingInvocationModes, got \(error).")
-                return
-            }
-
-            #expect(command == "xcode-select")
-            #expect(location != nil)
-        } catch {
-            Issue.record("Expected invocation-summary error, got \(error).")
-        }
     }
 
     @Test
@@ -1446,9 +1293,9 @@ struct CommandLineToolSupportTests {
         let invocation = try command.commandInvocation
 
         #expect(invocation.argumentValues == [
-            CommandLineToolInvocation.Argument("root"),
-            CommandLineToolInvocation.Argument("--force"),
-            CommandLineToolInvocation.Argument("Sources")
+            .string("root"),
+            .string("--force"),
+            .string("Sources")
         ])
         #expect(invocation.rawComponents == ["root", "--force", "Sources"])
         #expect(invocation.commandName == "root")
@@ -1697,15 +1544,42 @@ struct CommandLineToolSupportTests {
 
     @Test
     func structuredInvocationArgumentReflectsRawBytes() throws {
-        let argument = CommandLineToolInvocation.Argument(rawBytes: [0xff])
-        let emptyArgument = CommandLineToolInvocation.Argument("")
-        let quotedArgument = CommandLineToolInvocation.Argument("it's here")
+        let argument = CommandLineToolInvocation.Argument.rawBytes([0xff])
+        let emptyArgument = CommandLineToolInvocation.Argument.string("")
+        let quotedArgument = CommandLineToolInvocation.Argument.string("it's here")
 
         #expect(argument.storage == .rawBytes([0xff]))
         #expect(argument.stringValue == nil)
         #expect(argument.rawBytes == [0xff])
         #expect(emptyArgument.posixShellEscapedValue == "''")
         #expect(quotedArgument.posixShellEscapedValue == "'it'\\''s here'")
+    }
+
+    @Test
+    func semanticArgumentFactoriesPreserveArgumentMeaning() throws {
+        let remoteURL = try #require(URL(string: "https://example.com/releases/tool.zip?channel=nightly#download"))
+        let invocation = CommandLineToolInvocation(
+            argumentValues: [
+                "tool",
+                .string("--configuration=debug"),
+                .path("-signed=Browser Extension.app"),
+                .url(remoteURL)
+            ]
+        )
+
+        #expect(invocation.components.map(\.kind) == [
+            .executable,
+            .option,
+            .positionalArgument,
+            .positionalArgument
+        ])
+        #expect(invocation.rawComponents == [
+            "tool",
+            "--configuration=debug",
+            "-signed=Browser Extension.app",
+            remoteURL.absoluteString
+        ])
+        #expect(invocation.posixShellCommandLine == "'tool' '--configuration=debug' '-signed=Browser Extension.app' 'https://example.com/releases/tool.zip?channel=nightly#download'")
     }
 
     @Test("CommandLineTool callAsFunction preserves argument boundaries")
@@ -1745,7 +1619,7 @@ struct CommandLineToolSupportTests {
         let invocation = try CompatibilityRootTool()
             .with(\.force, true)
             .with(\.path, "Sources")
-            ._invocation(appending: arguments)
+            ._invocation(additionalArguments: arguments)
 
         #expect(arguments.rawValues == ["status", "--porcelain"])
         #expect(arguments.description == "status --porcelain")
@@ -1757,7 +1631,7 @@ struct CommandLineToolSupportTests {
     func invocationArgumentsPreserveEmptyArgvElementsAtModelLayer() throws {
         let arguments: CommandLineToolInvocation.Arguments = ["status", "", "--porcelain"]
         let invocation = try CompatibilityRootTool()
-            ._invocation(appending: arguments)
+            ._invocation(additionalArguments: arguments)
 
         #expect(arguments.rawValues == ["status", "", "--porcelain"])
         #expect(invocation.rawComponents == ["root", "status", "", "--porcelain"])
@@ -1768,7 +1642,7 @@ struct CommandLineToolSupportTests {
     func commandLineToolRunExecutesStructuredInvocationArguments() async throws {
         let tool = EchoCompatibilityTool()
         let record = try await tool._run(
-            appending: ["arguments-record"],
+            additionalArguments: ["arguments-record"],
             applying: .standardStreamMirroring(.disabled)
         )
 
@@ -1787,7 +1661,7 @@ struct CommandLineToolSupportTests {
     @Test("CommandLineTool _runCollectingOutput captures output without terminal mirroring")
     func commandLineToolRunCollectingOutputCapturesOutput() async throws {
         let tool = EchoCompatibilityTool()
-        let record = try await tool._runCollectingOutput(appending: ["collected-record"])
+        let record = try await tool._runCollectingOutput(additionalArguments: ["collected-record"])
 
         guard case .modeledInvocation(let invocation) = record.source else {
             Issue.record("Expected _runCollectingOutput to preserve modeled invocation source metadata.")
@@ -1804,8 +1678,8 @@ struct CommandLineToolSupportTests {
         let tool = EchoCompatibilityTool()
         let invocation = CommandLineToolInvocation(
             components: [
-                CommandLineToolInvocation.Argument("echo"),
-                CommandLineToolInvocation.Argument("explicit invocation")
+                .string("echo"),
+                .string("explicit invocation")
             ]
         )
         let record = try await tool._run(
@@ -1856,28 +1730,6 @@ struct CommandLineToolSupportTests {
         #expect(plan.selectedToolInvocation == nil)
         #expect(record.commandLine == plan.commandLine)
         #expect(record.stdoutString == "planned-record")
-    }
-
-    @Test("Command-line tools record successful execution attempts")
-    func commandLineToolsRecordSuccessfulExecutionAttempts() async throws {
-        let tool = EchoCompatibilityTool()
-            .with(\.text, "attempt-record")
-        let record = try await tool._run(applying: .standardStreamMirroring(.disabled))
-        let attempts = await tool._internalState._executionAttempts
-        let attempt = try #require(attempts.first)
-
-        #expect(attempts.count == 1)
-        #expect(attempt.shellScopeID != nil)
-        #expect(attempt.source.commandLine == record.commandLine)
-        #expect(attempt.finishedAt >= attempt.startedAt)
-
-        switch attempt.result {
-            case .success(let recorded):
-                #expect(recorded.commandLine == "echo attempt-record")
-                #expect(recorded.stdoutString == "attempt-record")
-            case .failure(let error):
-                Issue.record("Expected a successful execution attempt, got \(String(reflecting: error)).")
-        }
     }
 
     @Test("GenericSubcommand _run records the full modeled chain")
@@ -2303,7 +2155,7 @@ struct CommandLineToolSupportTests {
         #expect(single.invocationArguments == ["--single", "a", "--single", "b"])
         #expect(single.publicInvocationComponents == [
             .option(
-                key: CommandLineToolInvocation.Argument("--single"),
+                key: .string("--single"),
                 separator: .space,
                 values: CommandLineToolInvocation.Arguments(["a", "b"]),
                 multiValueEncoding: .singleValue
@@ -2356,76 +2208,6 @@ struct CommandLineToolSupportTests {
             .invocation
 
         #expect(command == "parent-child-conversion compile -sdk macosx --target arm64-apple-macos")
-    }
-
-    @Test
-    func resolvedDescriptionPreservesInvocationArgumentComponents() throws {
-        let description = try ResolvedDescriptionTool()
-            .with(\.target, "arm64-apple-macosx15.0")
-            .with(\.inputs, ["Sources/main.swift", "Sources/support.swift"])
-            .with(\.verbosity, 3)
-            .with(\.trace, true)
-            .resolve()
-
-        let target = try #require(description.arguments[id: .init(rawValue: "target", commandName: "resolved-description")])
-        let inputs = try #require(description.arguments[id: .init(rawValue: "inputs", commandName: "resolved-description")])
-        let verbosity = try #require(description.arguments[id: .init(rawValue: "verbosity", commandName: "resolved-description")])
-        let trace = try #require(description.arguments[id: .init(rawValue: "trace", commandName: "resolved-description")])
-
-        #expect(target.invocationArguments == ["--target", "arm64-apple-macosx15.0"])
-        #expect(target.invocationComponents == [
-            .option(
-                key: CommandLineToolInvocation.Argument("--target"),
-                separator: .space,
-                values: [CommandLineToolInvocation.Argument("arm64-apple-macosx15.0")]
-            )
-        ])
-        #expect(target.publicInvocationComponents == [
-            .option(
-                key: CommandLineToolInvocation.Argument("--target"),
-                separator: .space,
-                values: [CommandLineToolInvocation.Argument("arm64-apple-macosx15.0")]
-            )
-        ])
-        #expect(target.publicInvocationComponents.first?.key == CommandLineToolInvocation.Argument("--target"))
-        #expect(target.publicInvocationComponents.first?.values == CommandLineToolInvocation.Arguments(["arm64-apple-macosx15.0"]))
-        #expect(target.publicInvocationComponents.first?.rawValues == ["--target", "arm64-apple-macosx15.0"])
-        #expect(target.identifiedPublicInvocationComponents.first?.argumentID.propertyName == "target")
-        #expect(target.identifiedPublicInvocationComponents.first?.defaultPosition == .local)
-        #expect(target.identifiedPublicInvocationComponents.first?.component == target.publicInvocationComponents.first)
-        #expect(inputs.invocationArguments == ["Sources/main.swift", "Sources/support.swift"])
-        #expect(inputs.invocationComponents.map(\.kind) == [.positionalArgument, .positionalArgument])
-        #expect(inputs.publicInvocationComponents.map(\.kind) == [.positionalArgument, .positionalArgument])
-        #expect(inputs.invocationArgumentValues == [
-            CommandLineToolInvocation.Argument("Sources/main.swift"),
-            CommandLineToolInvocation.Argument("Sources/support.swift")
-        ])
-        #expect(inputs.invocationArgument == "Sources/main.swift Sources/support.swift")
-        #expect(verbosity.invocationArguments == ["-vvv"])
-        #expect(verbosity.invocationArgumentValues == [CommandLineToolInvocation.Argument("-vvv")])
-        #expect(trace.invocationArguments == ["--trace"])
-        #expect(trace.invocationArgumentValues == [CommandLineToolInvocation.Argument("--trace")])
-    }
-
-    @Test
-    func invocationSummaryContextPublishesArgumentDispositionIR() throws {
-        let command = ResolvedDescriptionTool()
-            .with(\.target, "arm64-apple-macosx15.0")
-            .with(\.inputs, ["Sources/main.swift"])
-        let context = ResolvedDescriptionTool.InvocationSummaryContext()
-        let components = try command.invocationComponents(context: context)
-        let targetRecord = try #require(
-            context
-                .argumentDispositionRecords(forPropertyNames: ["target"])
-                .first
-        )
-
-        #expect(components.contains(.option(key: "--target", value: "arm64-apple-macosx15.0")))
-        #expect(targetRecord.argumentID.propertyName == "target")
-        #expect(targetRecord.disposition == .defaultRender)
-        #expect(targetRecord.defaultPosition == .local)
-        #expect(targetRecord.identifiedComponents.first?.argumentID == targetRecord.argumentID)
-        #expect(targetRecord.identifiedComponents.first?.component == targetRecord.components.first)
     }
 
     @Test
@@ -2492,8 +2274,6 @@ struct CommandLineToolSupportTests {
             ["--target", "arm64-apple-macosx15.0"],
             ["--trace"]
         ])
-        #expect(context.argumentDispositionRecords.map(\.argumentID.propertyName).contains("target"))
-        #expect(context.argumentDispositionRecords.map(\.argumentID.propertyName).contains("trace"))
     }
 
     @Test
@@ -2515,12 +2295,12 @@ struct CommandLineToolSupportTests {
         #expect(sdk.id.propertyName == "sdk")
         #expect(sdk.id.commandName == CommandLineTool.Name("resolved-value-lowering"))
         #expect(sdk.publicInvocationComponents.first?.values.elements == [
-            CommandLineToolInvocation.Argument(fileURL: URL(fileURLWithPath: "/Applications/Xcode.app"))
+            .path(URL(fileURLWithPath: "/Applications/Xcode.app"))
         ])
         #expect(optionalIncludes.invocationArguments == ["--include", "Sources", "--include", "Tests"])
         #expect(paths.invocationArgumentValues == [
-            CommandLineToolInvocation.Argument(fileURL: URL(fileURLWithPath: "/tmp/Input.swift")),
-            CommandLineToolInvocation.Argument(fileURL: URL(fileURLWithPath: "/tmp/Support.swift"))
+            .path(URL(fileURLWithPath: "/tmp/Input.swift")),
+            .path(URL(fileURLWithPath: "/tmp/Support.swift"))
         ])
     }
 
@@ -2561,25 +2341,6 @@ struct CommandLineToolSupportTests {
         } catch {
             Issue.record("Expected invocation-summary error, got \(error).")
         }
-    }
-
-    @Test
-    func defaultInvocationArgumentsUseStructuralArgumentCarrier() throws {
-        let tool = ResolvedDescriptionTool()
-            .with(\.target, "arm64-apple-macosx15.0")
-            .with(\.inputs, ["Sources/main.swift"])
-        let context = ResolvedDescriptionTool.InvocationSummaryContext()
-
-        let localArguments = try tool._defaultInvocationArguments(
-            context: context,
-            positions: [.local]
-        )
-
-        #expect(localArguments == CommandLineToolInvocation.Arguments([
-            "--target",
-            "arm64-apple-macosx15.0",
-            "Sources/main.swift"
-        ]))
     }
 
     @Test

@@ -100,10 +100,8 @@ open class AnyCommandLineTool: Logging, ObjectDidChangeObservableObject {
         let environmentVariables = _resolveEnvironmentVariables()
         let lease = SystemShell._BorrowedLease()
         let shellState = SystemShell._InternalState()
-        let shellScope = SystemShell._ShellScope(kind: .commandLineToolLease)
-        let shellSession = _ShellSession(scope: shellScope, shellState: shellState)
+        let shellSession = _ShellSession(shellState: shellState)
 
-        await shellState._insertShellScope(shellScope)
         try await _internalState._insertShellSessionAfterValidatingUse(shellSession)
 
         let shell = SystemShell(
@@ -117,8 +115,7 @@ open class AnyCommandLineTool: Logging, ObjectDidChangeObservableObject {
             ),
             internalState: shellState,
             ownership: .borrowedFromCommandLineTool,
-            borrowedLease: lease,
-            shellScopeID: shellScope.id
+            borrowedLease: lease
         )
 
         defer {
@@ -134,8 +131,7 @@ open class AnyCommandLineTool: Logging, ObjectDidChangeObservableObject {
             result = .failure(error)
         }
 
-        await shellState._completeShellScope(id: shellScope.id)
-        await _internalState._completeShellSession(id: shellScope.id)
+        await _internalState._completeShellSession(id: shellSession.id)
 
         switch result {
             case .success(let value):

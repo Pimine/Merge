@@ -15,7 +15,6 @@ public protocol _ResolvedCommandLineToolInvocationArgument {
     var defaultPosition: _CommandLineToolArgumentPosition { get }
     var invocationComponents: [_ResolvedCommandLineToolDescription.InvocationComponent] { get }
     var publicInvocationComponents: [CommandLineToolInvocation.Component] { get }
-    var identifiedPublicInvocationComponents: [_ResolvedCommandLineToolDescription.IdentifiedInvocationComponent] { get }
     var invocationArgumentValues: [CommandLineToolInvocation.Argument] { get }
     var invocationArguments: [String] { get }
     var invocationArgument: String? { get }
@@ -43,7 +42,6 @@ extension _ResolvedCommandLineToolInvocationArgument {
                 "defaultPosition": defaultPosition,
                 "invocationComponents": invocationComponents,
                 "publicInvocationComponents": publicInvocationComponents,
-                "identifiedPublicInvocationComponents": identifiedPublicInvocationComponents,
                 "invocationArgumentValues": invocationArgumentValues,
                 "invocationArguments": invocationArguments,
                 "invocationArgument": invocationArgument as Any
@@ -70,16 +68,6 @@ extension _ResolvedCommandLineToolInvocationArgument {
     
     public var publicInvocationComponents: [CommandLineToolInvocation.Component] {
         invocationComponents.map(\.publicInvocationComponent)
-    }
-    
-    public var identifiedPublicInvocationComponents: [_ResolvedCommandLineToolDescription.IdentifiedInvocationComponent] {
-        publicInvocationComponents.map {
-            _ResolvedCommandLineToolDescription.IdentifiedInvocationComponent(
-                argumentID: id,
-                defaultPosition: defaultPosition,
-                component: $0
-            )
-        }
     }
     
     public var invocationArguments: [String] {
@@ -192,10 +180,6 @@ public struct _AnyResolvedCommandLineToolInvocationArgument: CustomStringConvert
         base.publicInvocationComponents
     }
     
-    public var identifiedPublicInvocationComponents: [_ResolvedCommandLineToolDescription.IdentifiedInvocationComponent] {
-        base.identifiedPublicInvocationComponents
-    }
-    
     public var invocationArgumentValues: [CommandLineToolInvocation.Argument] {
         base.invocationArgumentValues
     }
@@ -217,7 +201,6 @@ public struct _AnyResolvedCommandLineToolInvocationArgument: CustomStringConvert
                 "defaultPosition": defaultPosition,
                 "invocationComponents": invocationComponents,
                 "publicInvocationComponents": publicInvocationComponents,
-                "identifiedPublicInvocationComponents": identifiedPublicInvocationComponents,
                 "invocationArgumentValues": invocationArgumentValues,
                 "invocationArguments": invocationArguments,
                 "invocationArgument": invocationArgument as Any

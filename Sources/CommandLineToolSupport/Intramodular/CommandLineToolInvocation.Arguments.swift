@@ -324,14 +324,28 @@ extension CommandLineToolInvocation {
     }
 
     public func appending(
-        _ arguments: Arguments
+        arguments: Arguments
     ) -> Self {
         Self(argumentValues: argumentValues + arguments.elements)
     }
 
     public func appending(
-        _ components: Components
+        components: Components
     ) -> Self {
         Self(components: self.components + components.elements)
+    }
+
+    @available(*, deprecated, renamed: "appending(arguments:)")
+    public func appending(
+        _ arguments: Arguments
+    ) -> Self {
+        appending(arguments: arguments)
+    }
+
+    @available(*, deprecated, renamed: "appending(components:)")
+    public func appending(
+        _ components: Components
+    ) -> Self {
+        appending(components: components)
     }
 }

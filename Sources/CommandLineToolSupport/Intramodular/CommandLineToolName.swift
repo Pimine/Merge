@@ -15,7 +15,7 @@ public struct CommandLineToolName: CustomStringConvertible, CustomDebugStringCon
     public var argument: CommandLineToolInvocation.Argument
 
     public init(_ rawValue: String) {
-        self.init(CommandLineToolInvocation.Argument(rawValue))
+        self.init(.string(rawValue))
     }
 
     public init(_ argument: CommandLineToolInvocation.Argument) {
@@ -89,4 +89,3 @@ extension AnyCommandLineTool {
 extension CommandLineTool {
     public typealias Name = CommandLineToolName
 }
-

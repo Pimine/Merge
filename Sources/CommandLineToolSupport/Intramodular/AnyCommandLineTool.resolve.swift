@@ -11,19 +11,6 @@ import Swallow
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension AnyCommandLineTool {
-    package func _defaultInvocationArguments(
-        context: CommandLineToolInvocationSummary.InvocationSummaryContext,
-        positions: Set<_CommandLineToolArgumentPosition.Anchor>
-    ) throws -> CommandLineToolInvocation.Arguments {
-        CommandLineToolInvocation.Arguments(
-            try _defaultInvocationComponents(
-                context: context,
-                positions: positions
-            )
-            .flatMap(\.argumentValues)
-        )
-    }
-
     package func _defaultInvocationComponents(
         context: CommandLineToolInvocationSummary.InvocationSummaryContext,
         positions: Set<_CommandLineToolArgumentPosition.Anchor>
@@ -47,18 +34,6 @@ extension AnyCommandLineTool {
 
                 return shouldRender ? components : []
             }
-    }
-
-    public var _resolvedDescriptionChain: [_ResolvedCommandLineToolDescription] {
-        get throws {
-            guard let command = self as? any CommandLineTool else {
-                return [try resolve()]
-            }
-
-            return try _CommandLineToolCommandChain(resolvingOrSelf: command).map {
-                try $0.resolve()
-            }
-        }
     }
 
     public func resolve() throws -> _ResolvedCommandLineToolDescription {

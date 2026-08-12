@@ -36,34 +36,65 @@ extension CommandLineTool {
         )
     }
     
+    /// Returns this tool's modeled invocation with the supplied arguments added
+    /// after its declared arguments.
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     public func _invocation(
-        appending arguments: CommandLineToolInvocation.Arguments
+        additionalArguments: CommandLineToolInvocation.Arguments
     ) throws -> CommandLineToolInvocation {
-        try commandInvocation.appending(arguments)
+        try commandInvocation.appending(arguments: additionalArguments)
     }
     
+    /// Runs this tool with arguments added after its declared arguments.
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     @discardableResult
     public func _run(
-        appending arguments: CommandLineToolInvocation.Arguments,
+        additionalArguments: CommandLineToolInvocation.Arguments,
         applying differences: [SystemShell.Configuration.Difference] = []
     ) async throws -> _CommandLineToolExecutionRecord<Self> {
         try await _run(
-            invocation: try _invocation(appending: arguments),
+            invocation: try _invocation(additionalArguments: additionalArguments),
+            applying: differences
+        )
+    }
+
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    @_disfavoredOverload
+    @discardableResult
+    public func _run(
+        additionalArguments: [String],
+        applying differences: [SystemShell.Configuration.Difference] = []
+    ) async throws -> _CommandLineToolExecutionRecord<Self> {
+        try await _run(
+            additionalArguments: CommandLineToolInvocation.Arguments(additionalArguments),
             applying: differences
         )
     }
     
+    /// Runs this tool with additional arguments while capturing its standard
+    /// output and standard error.
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     @discardableResult
     public func _runCollectingOutput(
-        appending arguments: CommandLineToolInvocation.Arguments = [],
+        additionalArguments: CommandLineToolInvocation.Arguments = [],
         applying differences: [SystemShell.Configuration.Difference] = []
     ) async throws -> _CommandLineToolExecutionRecord<Self> {
         try await _run(
-            appending: arguments,
+            additionalArguments: additionalArguments,
             applying: differences + [._collectingOutput]
+        )
+    }
+
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    @_disfavoredOverload
+    @discardableResult
+    public func _runCollectingOutput(
+        additionalArguments: [String],
+        applying differences: [SystemShell.Configuration.Difference] = []
+    ) async throws -> _CommandLineToolExecutionRecord<Self> {
+        try await _runCollectingOutput(
+            additionalArguments: CommandLineToolInvocation.Arguments(additionalArguments),
+            applying: differences
         )
     }
     

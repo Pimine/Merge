@@ -115,16 +115,8 @@ extension CommandLineToolInvocationSummary {
             }
         }
         
-        public var argumentDispositionRecords: [DispositionRecord] {
+        private var allDispositionRecords: [DispositionRecord] {
             Array(dispositionRecords.values)
-        }
-        
-        public func argumentDispositionRecords(
-            forPropertyNames propertyNames: Set<String>
-        ) -> [DispositionRecord] {
-            argumentDispositionRecords.filter {
-                propertyNames.contains($0.argumentID.propertyName)
-            }
         }
         
         public func argumentDispositionRecords<Command: AnyCommandLineTool>(
@@ -137,7 +129,7 @@ extension CommandLineToolInvocationSummary {
                 }
             )
             
-            return argumentDispositionRecords.filter {
+            return allDispositionRecords.filter {
                 argumentIDs.contains($0.argumentID)
             }
         }

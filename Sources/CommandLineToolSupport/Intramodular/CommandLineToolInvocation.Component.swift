@@ -519,7 +519,7 @@ extension CommandLineToolInvocation.Component {
 
         return CommandLineToolInvocation.Arguments(
             values.elements.map { value in
-                CommandLineToolInvocation.Argument("\(key.rawValue)\(separator.rawValue)\(value.rawValue)")
+                .string("\(key.rawValue)\(separator.rawValue)\(value.rawValue)")
             }
         )
     }
@@ -570,8 +570,8 @@ extension CommandLineToolInvocation.Component {
         let value = String(rawValue[rawValue.index(after: separatorIndex)...])
 
         return (
-            CommandLineToolInvocation.Argument(key),
-            CommandLineToolInvocation.Argument(value)
+            .string(key),
+            .string(value)
         )
     }
 
@@ -606,9 +606,9 @@ extension CommandLineToolInvocation.Component {
         }
 
         return (
-            CommandLineToolInvocation.Argument(key),
+            .string(key),
             match.separator,
-            CommandLineToolInvocation.Argument(value)
+            .string(value)
         )
     }
 

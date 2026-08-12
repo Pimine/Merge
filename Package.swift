@@ -90,6 +90,16 @@ var package = Package(
                 .swiftLanguageMode(.v5),
             ]
         ),
+        .target(
+            name: "CommandLineToolSupportExamples",
+            dependencies: [
+                "CommandLineToolSupport",
+            ],
+            path: "Examples/CommandLineToolSupport",
+            swiftSettings: [
+                .swiftLanguageMode(.v5),
+            ]
+        ),
         .macro(
             name: "CommandLineToolSupportMacros",
             dependencies: [
@@ -104,6 +114,7 @@ var package = Package(
             name: "CommandLineSupportTests",
             dependencies: [
                 "CommandLineToolSupport",
+                "CommandLineToolSupportExamples",
             ],
             path: "Tests/CommandLineSupport",
             swiftSettings: [

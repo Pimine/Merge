@@ -1696,25 +1696,25 @@ This section tracks what is currently implemented in the active Merge / Develope
 
 | Example | Current Status | Purpose |
 | --- | --- | --- |
-| `swift build` style example | Implemented in Merge tests under `Tests/CommandLineSupport`. | Demonstrates `@Parameter`, `@Flag`, counters, typed flags, subcommands, single-value encoding, and positional arguments without a custom summary. |
+| `swift build` style example | Compile-checked under `Examples/CommandLineToolSupport`. | Demonstrates `@Option`, `@Flag`, counters, typed flags, subcommands, single-value encoding, and positional arguments without a custom summary. |
 | `xcrun` / `xcrun swiftc` | Implemented in DeveloperAutomation WIP module. | Primary real-world wrapper; exercises parent command options, nested command rendering, custom summary, and loaded-module-trace rendering. |
 | `git2` | Implemented in DeveloperAutomation WIP tests. | Stress test for refactoring an existing hand-written wrapper into typed parent/subcommand models. |
 | `tar` / `curl` | Implemented as small WIP examples. | Exercises short flags, typed operation flags, and counter flags. |
 
 ### Merge Example: `swift build`
 
-Implemented as a module-wise Swift Testing example. This is the cleanest current "good usage" test because it does not rely on invocation summaries.
+Implemented in the compile-checked `CommandLineToolSupportExamples` module. This is the cleanest current "good usage" example because it does not rely on invocation summaries.
 
 Declaration shape:
 
 ```swift
 final class ExampleSwiftTool: AnyCommandLineTool, CommandLineTool {
-    override var _commandName: String { "swift" }
+    override var commandName: CommandLineTool.Name? { "swift" }
 
     @Flag(name: "verbose", placement: .local)
     var verbose: Bool = false
 
-    @Parameter(conversion: .hyphenPrefixed, name: "sdk", placement: .local)
+    @Option(conversion: .hyphenPrefixed, name: "sdk", placement: .local)
     var sdk: String? = nil
 
     @Subcommand(of: ExampleSwiftTool.self, name: "build", command: ExampleSwiftBuildTool())
@@ -1722,15 +1722,15 @@ final class ExampleSwiftTool: AnyCommandLineTool, CommandLineTool {
 }
 
 final class ExampleSwiftBuildTool: AnyCommandLineTool, CommandLineTool {
-    override var _commandName: String { "build" }
+    override var commandName: CommandLineTool.Name? { "build" }
 
     @Flag
     var configuration: Configuration? = nil
 
-    @Parameter(name: "package-path")
+    @Option(name: "package-path")
     var packagePath: String? = nil
 
-    @Parameter(name: nil)
+    @Argument(name: nil)
     var explicitProducts: [String] = []
 }
 ```
@@ -2052,7 +2052,7 @@ That should lower to argv, support summaries/docs/diagnostics, preserve tool-spe
 
 - Keep provisional selected-tool, execution-record, output-formatter, and invocation-summary files under `Sources/CommandLineToolSupport/Intramodular (WIP)` until their names and semantics are reviewed.
 - Prefer one-line type documentation in WIP source files: it should explain why the type exists, not restate its stored properties.
-- Keep module-wise tests under `Tests/CommandLineSupport`.
+- Keep behavioral tests under `Tests/CommandLineSupport` and compile-checked usage declarations under `Examples/CommandLineToolSupport`.
 - Add tests for:
   - nested subcommands with parent and child summaries.
 - Clean up spelling/API roughness:

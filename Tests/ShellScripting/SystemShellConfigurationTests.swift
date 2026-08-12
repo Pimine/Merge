@@ -119,28 +119,29 @@ struct SystemShellConfigurationTests {
         )
     }
 
-    @Test("Scoped child shells share process tracking state")
-    func scopedConfigurationSharesProcessTrackingState() async throws {
-        let shell = SystemShell()
-
-        try await shell.withConfiguration(
-            applying: .standardStreamMirroring(.disabled)
-        ) { child in
-            let result = try await child.run(command: "echo scoped")
-
-            #expect(result.stdoutString == "scoped", "The child shell should still capture stdout.")
+    @Test("A parent shell can terminate work launched by a scoped child")
+    func scopedConfigurationSharesLiveProcessOwnership() async throws {
+        let shell = SystemShell(
+            options: [._teardown([.terminate(allowedDurationToNextStep: .milliseconds(100))])]
+        )
+        let task = Task {
+            try await shell.withConfiguration(
+                applying: .standardStreamMirroring(.disabled)
+            ) { child in
+                try await child.run(
+                    command: "trap 'exit 0' TERM; while true; do sleep 1; done"
+                )
+            }
         }
 
-        let completedRunResults = await shell.completedRunResults
+        while await shell.runningProcesses.isEmpty {
+            try await Task.sleep(.milliseconds(10))
+        }
 
-        #expect(
-            completedRunResults.count == 1,
-            "The parent shell should observe run results produced by scoped child shells."
-        )
-        #expect(
-            completedRunResults.first?.stdoutString == "scoped",
-            "The shared process history should preserve the child's captured stdout."
-        )
+        try await shell.kill()
+        _ = try await task.value
+
+        #expect(await shell.runningProcesses.isEmpty)
     }
 
     @Test("Disabled mirroring still captures standard streams")

@@ -11,8 +11,11 @@ import Testing
 struct PassthroughTaskTests {
     @Test
     func testStatus() async throws {
+        let gate = AsyncStream<Void>.makeStream()
         let task = PassthroughTask<Int, Error>(priority: nil) {
-            try await Task.sleep(.seconds(1))
+            for await _ in gate.stream {
+                break
+            }
 
             return 69
         }
@@ -22,6 +25,9 @@ struct PassthroughTaskTests {
         task.start()
 
         #expect(task.status == .active)
+
+        gate.continuation.yield(())
+        gate.continuation.finish()
 
         let value = try await task.value
 

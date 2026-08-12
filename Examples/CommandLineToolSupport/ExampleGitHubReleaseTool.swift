@@ -65,3 +65,4 @@ final class ExampleGitHubTool: AnyCommandLineTool, CommandLineTool {
 }
 
 #endif
+

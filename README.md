@@ -4,6 +4,10 @@ Robust task management and concurrency utilities built atop Combine.
 
 # Usage
 
+Command-line tool modeling examples are catalogued in
+[CommandLineToolSupport Examples](Documentation/CommandLineToolSupport-Examples.md). These examples are
+compiled as a separate module so they remain current without being treated as behavioral tests.
+
 ### `ObservableTask`
 
 `ObservableTask` is one of the main exports of this framework. 

@@ -1,5 +1,5 @@
 {
-  "originHash" : "b1bf12047526932df73f8c73dcc1a643251699e9f329d3a05bcdc4882394de02",
+  "originHash" : "64610a88d51f4bf3d1bcf6e7370c172067de03975d4c182326a368bf6bcf88d2",
   "pins" : [
     {
       "identity" : "swallow",
@@ -7,7 +7,7 @@
       "location" : "https://github.com/vmanot/Swallow.git",
       "state" : {
         "branch" : "master",
-        "revision" : "6ba39ad9dd35a4f092ffa9cbb69723c4c628bfb3"
+        "revision" : "7a1b723dcdad1a288b9152492c84178817674327"
       }
     },
     {

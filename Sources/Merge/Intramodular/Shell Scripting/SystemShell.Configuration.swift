@@ -229,47 +229,14 @@ extension SystemShell {
             throw _DeveloperError.conflictingConfigurationDifferences
         }
 
-        let childScope: _ShellScope?
-
-        if let shellScopeID = _shellScopeID {
-            let parentScope = await _internalState._shellScope(id: shellScopeID)
-
-            childScope = _ShellScope(
-                parentID: shellScopeID,
-                rootID: parentScope?.rootID ?? shellScopeID,
-                kind: .configurationScope
-            )
-        } else {
-            childScope = nil
-        }
-
-        if let childScope {
-            await _internalState._insertShellScope(childScope)
-        }
-
         let child = SystemShell(
             configuration: childConfiguration,
             options: _nonStandardStreamMirroringOptions,
             internalState: _internalState,
             ownership: ownership,
-            borrowedLease: _borrowedLease,
-            shellScopeID: childScope?.id
+            borrowedLease: _borrowedLease
         )
 
-        do {
-            let result = try await operation(child)
-
-            if let childScope {
-                await _internalState._completeShellScope(id: childScope.id)
-            }
-
-            return result
-        } catch {
-            if let childScope {
-                await _internalState._completeShellScope(id: childScope.id)
-            }
-
-            throw error
-        }
+        return try await operation(child)
     }
 }

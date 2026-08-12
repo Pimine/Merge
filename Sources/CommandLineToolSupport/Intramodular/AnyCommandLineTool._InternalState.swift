@@ -42,46 +42,17 @@ extension AnyCommandLineTool {
     }
 
     package struct _ShellSession: Identifiable, Sendable {
-        package typealias ID = SystemShell._ShellScope.ID
-
-        package let id: ID
-        package var scope: SystemShell._ShellScope
-        package let shellState: SystemShell._InternalState
-
-        package init(
-            scope: SystemShell._ShellScope,
-            shellState: SystemShell._InternalState
-        ) {
-            self.id = scope.id
-            self.scope = scope
-            self.shellState = shellState
-        }
-    }
-
-    package struct _ExecutionAttempt: Identifiable, @unchecked Sendable {
         package typealias ID = UUID
 
         package let id: ID
-        package let startedAt: Date
-        package let finishedAt: Date
-        package let shellScopeID: SystemShell._ShellScope.ID?
-        package let source: _CommandLineToolExecutionSource
-        package let result: Result<_CommandLineToolExecutionRecord<AnyCommandLineTool>, Error>
+        package let shellState: SystemShell._InternalState
 
         package init(
             id: ID = ID(),
-            startedAt: Date,
-            finishedAt: Date,
-            shellScopeID: SystemShell._ShellScope.ID?,
-            source: _CommandLineToolExecutionSource,
-            result: Result<_CommandLineToolExecutionRecord<AnyCommandLineTool>, Error>
+            shellState: SystemShell._InternalState
         ) {
             self.id = id
-            self.startedAt = startedAt
-            self.finishedAt = finishedAt
-            self.shellScopeID = shellScopeID
-            self.source = source
-            self.result = result
+            self.shellState = shellState
         }
     }
 
@@ -90,50 +61,10 @@ extension AnyCommandLineTool {
         nonisolated package let objectDidChange = _ObjectDidChangePublisher()
 
         package private(set) var _lifecycleStatus: _LifecycleStatus = .active
-        package private(set) var _executionAttempts: [AnyCommandLineTool._ExecutionAttempt] = []
         package private(set) var _shellSessions: IdentifierIndexingArrayOf<_ShellSession> = []
-        package private(set) var _shellScopes: IdentifierIndexingArrayOf<SystemShell._ShellScope> = []
 
         package init() {
 
-        }
-
-        package var _activeShellScopes: [SystemShell._ShellScope] {
-            _shellScopes.filter { $0.status == .active }
-        }
-
-        package var _activeShellSessions: [AnyCommandLineTool._ShellSession] {
-            _shellSessions.filter { $0.scope.status == .active }
-        }
-
-        package var _completedShellScopes: [SystemShell._ShellScope] {
-            _shellScopes.filter { $0.status == .completed }
-        }
-
-        package func _shellScope(
-            id: SystemShell._ShellScope.ID
-        ) -> SystemShell._ShellScope? {
-            _shellScopes[id: id]
-        }
-
-        package func _childShellScopes(
-            of parentID: SystemShell._ShellScope.ID
-        ) -> [SystemShell._ShellScope] {
-            _shellScopes.filter { $0.parentID == parentID }
-        }
-
-        package func _descendantShellScopes(
-            of rootID: SystemShell._ShellScope.ID
-        ) -> [SystemShell._ShellScope] {
-            _shellScopes.filter { $0.rootID == rootID && $0.id != rootID }
-        }
-
-        package func _insertShellScope(
-            _ scope: SystemShell._ShellScope
-        ) {
-            objectWillChange.send()
-            _shellScopes.updateOrAppend(scope)
-            objectDidChange.send()
         }
 
         package func _insertShellSession(
@@ -141,7 +72,6 @@ extension AnyCommandLineTool {
         ) {
             objectWillChange.send()
             _shellSessions.updateOrAppend(session)
-            _shellScopes.updateOrAppend(session.scope)
             objectDidChange.send()
         }
 
@@ -152,41 +82,20 @@ extension AnyCommandLineTool {
             _insertShellSession(session)
         }
 
-        package func _appendExecutionAttempt(
-            _ attempt: AnyCommandLineTool._ExecutionAttempt
+        package func _completeShellSession(
+            id: AnyCommandLineTool._ShellSession.ID
         ) {
-            objectWillChange.send()
-            _executionAttempts.append(attempt)
-            objectDidChange.send()
-        }
-
-        package func _completeShellScope(
-            id: SystemShell._ShellScope.ID
-        ) {
-            guard var scope = _shellScopes[id: id], scope.status != .completed else {
+            guard _shellSessions[id: id] != nil else {
                 return
             }
 
             objectWillChange.send()
-            scope.status = .completed
-            _shellScopes[id: id] = scope
-
-            if var session = _shellSessions[id: id] {
-                session.scope = scope
-                _shellSessions[id: id] = session
-            }
-
+            _shellSessions[id: id] = nil
             objectDidChange.send()
         }
 
-        package func _completeShellSession(
-            id: SystemShell._ShellScope.ID
-        ) {
-            _completeShellScope(id: id)
-        }
-
         package func _beginKill() -> [AnyCommandLineTool._ShellSession] {
-            let activeShellSessions = _activeShellSessions
+            let activeShellSessions = Array(_shellSessions)
 
             if _lifecycleStatus != .killed {
                 objectWillChange.send()
@@ -220,7 +129,6 @@ extension AnyCommandLineTool {
                 failedSessionCount += 1
             }
 
-            await session.shellState._completeShellScope(id: session.id)
             await _internalState._completeShellSession(id: session.id)
         }
 

@@ -142,3 +142,4 @@ final class ExampleModifierApplicabilityTool: AnyCommandLineTool, CommandLineToo
 }
 
 #endif
+

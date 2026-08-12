@@ -2,7 +2,7 @@
 
 import CommandLineToolSupport
 
-// Test fixture intentionally mirrors command-line tool spelling.
+// The example intentionally mirrors command-line tool spelling.
 final class ExampleXcrunTool: AnyCommandLineToolWithSelectedTool, CommandLineTool {
     override var commandName: CommandLineTool.Name? {
         "xcrun"

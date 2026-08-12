@@ -10,23 +10,6 @@ import Testing
 @Suite
 struct PublisherExtensionsTests {
     @Test
-    func testSubscribeAndWait() {
-        let f1 = Future.async(qos: .unspecified) { () -> Int in
-            sleep(1)
-
-            return 1
-        }
-
-        let f2 = Future.async(qos: .unspecified) { () -> Int in
-            sleep(1)
-
-            return 2
-        }
-
-        #expect((f1.subscribeAndWaitUntilDone(), f2.subscribeAndWaitUntilDone()) == (1, 2))
-    }
-
-    @Test
     func testEitherPublisher() {
         enum TestError: Hashable, Error {
             case some

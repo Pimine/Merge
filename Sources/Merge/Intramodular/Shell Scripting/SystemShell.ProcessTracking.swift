@@ -18,12 +18,6 @@ extension SystemShell {
         }
     }
 
-    package var completedRunResults: [_ProcessRunResult] {
-        get async {
-            await _internalState.completedRunResults
-        }
-    }
-
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     package func teardownRunningProcesses() async throws {
         _ = try await teardownRunningProcessesReporting()
@@ -37,7 +31,6 @@ extension SystemShell {
         do {
             let result = try await process.run()
 
-            await _internalState.appendCompletedRunResult(result)
             await _internalState.removeRunningProcess(process)
 
             return result
@@ -59,59 +52,10 @@ extension SystemShell {
         nonisolated package let objectWillChange = ObservableObjectPublisher()
         nonisolated package let objectDidChange = _ObjectDidChangePublisher()
 
-        package private(set) var _shellScopes: IdentifierIndexingArrayOf<SystemShell._ShellScope> = []
         package private(set) var runningProcesses: [_AsyncProcess] = []
-        package private(set) var completedRunResults: [_ProcessRunResult] = []
 
         package init() {
 
-        }
-
-        package var _activeShellScopes: [SystemShell._ShellScope] {
-            _shellScopes.filter { $0.status == .active }
-        }
-
-        package var _completedShellScopes: [SystemShell._ShellScope] {
-            _shellScopes.filter { $0.status == .completed }
-        }
-
-        package func _shellScope(
-            id: SystemShell._ShellScope.ID
-        ) -> SystemShell._ShellScope? {
-            _shellScopes[id: id]
-        }
-
-        package func _childShellScopes(
-            of parentID: SystemShell._ShellScope.ID
-        ) -> [SystemShell._ShellScope] {
-            _shellScopes.filter { $0.parentID == parentID }
-        }
-
-        package func _descendantShellScopes(
-            of rootID: SystemShell._ShellScope.ID
-        ) -> [SystemShell._ShellScope] {
-            _shellScopes.filter { $0.rootID == rootID && $0.id != rootID }
-        }
-
-        package func _insertShellScope(
-            _ scope: SystemShell._ShellScope
-        ) {
-            objectWillChange.send()
-            _shellScopes.updateOrAppend(scope)
-            objectDidChange.send()
-        }
-
-        package func _completeShellScope(
-            id: SystemShell._ShellScope.ID
-        ) {
-            guard var scope = _shellScopes[id: id], scope.status != .completed else {
-                return
-            }
-
-            objectWillChange.send()
-            scope.status = .completed
-            _shellScopes[id: id] = scope
-            objectDidChange.send()
         }
 
         package func insertRunningProcess(
@@ -135,14 +79,6 @@ extension SystemShell {
 
             objectWillChange.send()
             runningProcesses.removeAll(where: { $0 === process })
-            objectDidChange.send()
-        }
-
-        package func appendCompletedRunResult(
-            _ result: _ProcessRunResult
-        ) {
-            objectWillChange.send()
-            completedRunResults.append(result)
             objectDidChange.send()
         }
     }

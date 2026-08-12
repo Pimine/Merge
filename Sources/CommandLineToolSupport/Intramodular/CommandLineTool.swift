@@ -85,7 +85,7 @@ extension CommandLineTool {
                 .makeInvocationComponents()
             )
         } else {
-            components.append(.executable(CommandLineToolInvocation.Argument(requireCommandName().rawValue)))
+            components.append(.executable(.string(requireCommandName().rawValue)))
             components.append(contentsOf: summaryComponents)
         }
 

@@ -123,7 +123,7 @@ extension AnyCommandLineTool._AttachedToolHost {
                 }
 
                 result.append(
-                    .selectedTool(CommandLineToolInvocation.Argument(selectedToolCommandName ?? selectedTool.requireCommandName().rawValue))
+                    .selectedTool(.string(selectedToolCommandName ?? selectedTool.requireCommandName().rawValue))
                 )
                 result.append(contentsOf: selectedInvocationComponents)
 

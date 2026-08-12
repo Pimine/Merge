@@ -132,7 +132,7 @@ extension CommandLineToolInvocationSummary {
             parent: AnyCommandLineTool?,
             context: InvocationSummaryContext
         ) throws -> [CommandLineToolInvocation.Component] {
-            text.isEmpty ? [] : [.positionalArgument(CommandLineToolInvocation.Argument(text))]
+            text.isEmpty ? [] : [.positionalArgument(.string(text))]
         }
     }
     

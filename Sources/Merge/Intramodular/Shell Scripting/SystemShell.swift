@@ -67,7 +67,6 @@ public final class SystemShell: Logging, ObjectDidChangeObservableObject {
 
     package let _internalState: _InternalState
     package let _borrowedLease: _BorrowedLease?
-    package let _shellScopeID: _ShellScope.ID?
     package var ownership: Ownership = .local
 
     public var objectWillChange: AnyPublisher<Void, Never> {
@@ -91,7 +90,6 @@ public final class SystemShell: Logging, ObjectDidChangeObservableObject {
         self._options = options?.filter({ !$0._isStandardStreamForwardingOption })
         self._internalState = _InternalState()
         self._borrowedLease = nil
-        self._shellScopeID = nil
     }
 
     public init(
@@ -107,7 +105,6 @@ public final class SystemShell: Logging, ObjectDidChangeObservableObject {
         self._options = options?.filter({ !$0._isStandardStreamForwardingOption })
         self._internalState = _InternalState()
         self._borrowedLease = nil
-        self._shellScopeID = nil
     }
 
     public init(
@@ -118,7 +115,6 @@ public final class SystemShell: Logging, ObjectDidChangeObservableObject {
         self._options = options?.filter({ !$0._isStandardStreamForwardingOption })
         self._internalState = _InternalState()
         self._borrowedLease = nil
-        self._shellScopeID = nil
     }
 
     package init(
@@ -126,15 +122,13 @@ public final class SystemShell: Logging, ObjectDidChangeObservableObject {
         options: [_AsyncProcessOption]? = nil,
         internalState: _InternalState,
         ownership: Ownership,
-        borrowedLease: _BorrowedLease?,
-        shellScopeID: _ShellScope.ID? = nil
+        borrowedLease: _BorrowedLease?
     ) {
         self._configuration = configuration
         self._options = options?.filter({ !$0._isStandardStreamForwardingOption })
         self._internalState = internalState
         self.ownership = ownership
         self._borrowedLease = borrowedLease
-        self._shellScopeID = shellScopeID
     }
 
     package func _optionsForProcessLaunch() throws -> [_AsyncProcessOption]? {
