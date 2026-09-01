@@ -1308,7 +1308,7 @@ struct CommandLineToolSupportTests {
 
     @Test
     func shellBuiltinsComposeWithCommandsInTheSameShell() throws {
-        let mutation: ShellOptionMutation = CLT.set(enabling: .pipefail, .pipefail)
+        let mutation = ShellOptionMutation(enabling: .pipefail, .pipefail)
         let command = try mutation.followed(
             by: ShellCommandString(rawValue: "false | true")
         )
@@ -1343,7 +1343,7 @@ struct CommandLineToolSupportTests {
 
     @Test
     func shellOptionMutationAffectsFollowingPipeline() throws {
-        let command = try CLT.set(enabling: .pipefail).followed(
+        let command = try ShellOptionMutation(enabling: .pipefail).followed(
             by: ShellCommandString(rawValue: "false | true")
         )
 
