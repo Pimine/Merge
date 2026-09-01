@@ -31,12 +31,6 @@ final class CompatibilityLeafTool: AnyCommandLineTool, CommandLineTool {
     }
 }
 
-private struct CompatibilityShellBuiltin: ShellBuiltin {
-    let commandInvocation = CommandLineToolInvocation(
-        argumentValues: ["set", "-o", "pipefail"]
-    )
-}
-
 final class EchoCompatibilityTool: AnyCommandLineTool, CommandLineTool {
     override var commandName: CommandLineTool.Name? {
         "echo"
@@ -1314,16 +1308,46 @@ struct CommandLineToolSupportTests {
 
     @Test
     func shellBuiltinsComposeWithCommandsInTheSameShell() throws {
-        let command = try CompatibilityShellBuiltin().followed(
+        let mutation = ShellOptionMutation(enabling: .pipefail, .pipefail)
+        let command = try mutation.followed(
             by: ShellCommandString(rawValue: "false | true")
         )
 
+        #expect(mutation.operation == .enable)
+        #expect(mutation.options == [.pipefail])
         #expect(
             command == ShellCommandString(
                 rawValue: "'set' '-o' 'pipefail'; false | true",
                 dialect: .posix
             )
         )
+    }
+
+    @Test
+    func shellOptionMutationsAcceptShellSpecificNamedOptions() {
+        let mutation = ShellOptionMutation(disabling: "extendedglob")
+
+        #expect(mutation.operation == .disable)
+        #expect(mutation.options == [ShellOptionMutation.Option(rawValue: "extendedglob")])
+        #expect(mutation.commandInvocation.argumentValues == ["set", "+o", "extendedglob"])
+    }
+
+    @Test
+    func shellOptionMutationAffectsFollowingPipeline() throws {
+        let command = try ShellOptionMutation(enabling: .pipefail).followed(
+            by: ShellCommandString(rawValue: "false | true")
+        )
+
+        for shell in ["/bin/bash", "/bin/zsh"] {
+            let process = Process()
+            process.executableURL = URL(filePath: shell)
+            process.arguments = ["-c", command.rawValue]
+
+            try process.run()
+            process.waitUntilExit()
+
+            #expect(process.terminationStatus == 1)
+        }
     }
 
     @Test
