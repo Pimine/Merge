@@ -36,6 +36,26 @@ extension ShellCommand {
             dialect: preceding.dialect
         )
     }
+
+    /// Pipes this command's standard output to `command`'s standard input.
+    public func piped<Command: ShellCommand>(
+        to command: Command
+    ) throws -> ShellCommandString {
+        let preceding = shellCommandString
+        let following = command.shellCommandString
+
+        guard preceding.dialect == following.dialect else {
+            throw ShellCommandString.CompositionError.incompatibleDialects(
+                preceding: preceding.dialect,
+                following: following.dialect
+            )
+        }
+
+        return ShellCommandString(
+            rawValue: "\(preceding.rawValue) | \(following.rawValue)",
+            dialect: preceding.dialect
+        )
+    }
 }
 
 extension ShellCommandString: ShellCommand {

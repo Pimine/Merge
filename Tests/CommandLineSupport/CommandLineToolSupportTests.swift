@@ -1308,7 +1308,7 @@ struct CommandLineToolSupportTests {
 
     @Test
     func shellBuiltinsComposeWithCommandsInTheSameShell() throws {
-        let mutation = ShellOptionMutation(enabling: .pipefail, .pipefail)
+        let mutation: ShellOptionMutation = CLT.set(enabling: .pipefail, .pipefail)
         let command = try mutation.followed(
             by: ShellCommandString(rawValue: "false | true")
         )
@@ -1324,6 +1324,15 @@ struct CommandLineToolSupportTests {
     }
 
     @Test
+    func shellCommandsComposeAsTypedPipelines() throws {
+        let command = try ShellCommandString(rawValue: "printf apple").piped(
+            to: ShellCommandString(rawValue: "cat")
+        )
+
+        #expect(command == ShellCommandString(rawValue: "printf apple | cat", dialect: .posix))
+    }
+
+    @Test
     func shellOptionMutationsAcceptShellSpecificNamedOptions() {
         let mutation = ShellOptionMutation(disabling: "extendedglob")
 
@@ -1334,7 +1343,7 @@ struct CommandLineToolSupportTests {
 
     @Test
     func shellOptionMutationAffectsFollowingPipeline() throws {
-        let command = try ShellOptionMutation(enabling: .pipefail).followed(
+        let command = try CLT.set(enabling: .pipefail).followed(
             by: ShellCommandString(rawValue: "false | true")
         )
 

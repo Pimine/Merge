@@ -288,7 +288,7 @@ extension _CommandLineToolExecutionPlan.StandardStreamWiring {
         }
 
         var currentStageID = rootStage.id
-        var renderedCommands: [String] = []
+        var renderedPipeline: ShellCommandString?
 
         while true {
             guard let stage = stages[id: currentStageID] else {
@@ -299,11 +299,17 @@ extension _CommandLineToolExecutionPlan.StandardStreamWiring {
                 throw RenderingError.missingStageExecutionSource(currentStageID)
             }
 
-            renderedCommands.append(
-                currentStageID == stageID
-                ? "\(commandString.rawValue) 2>&1"
-                : commandString.rawValue
+            let renderedCommand = ShellCommandString(
+                rawValue: currentStageID == stageID
+                    ? "\(commandString.rawValue) 2>&1"
+                    : commandString.rawValue,
+                dialect: commandString.dialect
             )
+            if let precedingCommand = renderedPipeline {
+                renderedPipeline = try precedingCommand.piped(to: renderedCommand)
+            } else {
+                renderedPipeline = renderedCommand
+            }
 
             let outgoingConnections = outgoingConnections[currentStageID] ?? []
 
@@ -318,9 +324,10 @@ extension _CommandLineToolExecutionPlan.StandardStreamWiring {
             currentStageID = connection.input.stageID
         }
 
-        return ShellCommandString(
-            rawValue: renderedCommands.joined(separator: " | "),
-            dialect: .posix
-        )
+        guard let renderedPipeline else {
+            throw RenderingError.noRootStage
+        }
+
+        return renderedPipeline
     }
 }
