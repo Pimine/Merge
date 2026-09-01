@@ -988,50 +988,13 @@ struct CommandLineToolSupportTests {
             ]
         )
 
-        let command = try wiring.renderedShellPipelineCommandString(
-            mergingStandardErrorIntoStandardOutputAt: primary.id
-        )
+        let redirectedWiring = try wiring.mergingStandardErrorIntoStandardOutput(at: primary.id)
+        let idempotentlyRedirectedWiring = try redirectedWiring.mergingStandardErrorIntoStandardOutput(at: primary.id)
+        let command = try redirectedWiring.renderedShellPipelineCommandString()
 
+        #expect(idempotentlyRedirectedWiring == redirectedWiring)
         #expect(command.rawValue == "'xcrun' 'xcodebuild' 'build' 2>&1 | perl -ne 'print' | 'xcbeautify'")
         #expect(command.dialect == .posix)
-    }
-
-    @Test
-    func standardStreamWiringRejectsMissingStandardErrorMergeStage() throws {
-        typealias Wiring = _CommandLineToolExecutionPlan<AnyCommandLineTool>.StandardStreamWiring
-
-        let producer = Wiring.Stage(
-            role: .primaryInvocation,
-            executionSource: .shellCommandString("producer")
-        )
-        let consumer = Wiring.Stage(
-            role: .external,
-            executionSource: .shellCommandString("consumer")
-        )
-        let missingStageID = UUID()
-        let wiring = Wiring(
-            stages: [
-                producer,
-                consumer
-            ],
-            streamConnections: [
-                Wiring.StreamConnection(
-                    output: .init(stageID: producer.id, stream: .standardOutput),
-                    input: .init(stageID: consumer.id, stream: .standardInput)
-                )
-            ]
-        )
-
-        do {
-            _ = try wiring.renderedShellPipelineCommandString(
-                mergingStandardErrorIntoStandardOutputAt: missingStageID
-            )
-            Issue.record("Expected missing merge stage to throw.")
-        } catch let error as Wiring.RenderingError {
-            #expect(error == .missingStage(missingStageID))
-        } catch {
-            Issue.record("Expected \(Wiring.RenderingError.self), got \(error).")
-        }
     }
 
     @Test

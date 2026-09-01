@@ -38,6 +38,15 @@ extension _CommandLineToolExecutionPlan.StandardStreamWiring {
                     throw ValidationError.missingStage(connection.input.stageID)
                 }
             }
+
+            for redirection in wiring.streamRedirections {
+                switch redirection {
+                    case .standardErrorToStandardOutput(let stageID):
+                        guard wiring.stages[id: stageID] != nil else {
+                            throw ValidationError.missingStage(stageID)
+                        }
+                }
+            }
         }
 
         private func validateEndpointDirections() throws {

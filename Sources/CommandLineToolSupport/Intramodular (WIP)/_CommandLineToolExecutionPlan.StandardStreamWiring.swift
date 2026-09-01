@@ -18,13 +18,16 @@ extension _CommandLineToolExecutionPlan {
     public struct StandardStreamWiring: CustomStringConvertible, CustomDebugStringConvertible, CustomReflectable, Hashable, Sendable {
         public var stages: IdentifierIndexingArrayOf<Stage>
         public var streamConnections: [StreamConnection]
+        public var streamRedirections: OrderedSet<StreamRedirection>
 
         public init(
             stages: IdentifierIndexingArrayOf<Stage> = [],
-            streamConnections: [StreamConnection] = []
+            streamConnections: [StreamConnection] = [],
+            streamRedirections: OrderedSet<StreamRedirection> = []
         ) {
             self.stages = stages
             self.streamConnections = streamConnections
+            self.streamRedirections = streamRedirections
         }
 
         public func validate() throws {
@@ -32,11 +35,12 @@ extension _CommandLineToolExecutionPlan {
         }
 
         public var description: String {
-            streamConnections.map(\.description).joined(separator: ", ")
+            (streamConnections.map(\.description) + streamRedirections.map(\.description))
+                .joined(separator: ", ")
         }
 
         public var debugDescription: String {
-            "_CommandLineToolExecutionPlan.StandardStreamWiring(stages: \(stages.count), streamConnections: \(streamConnections.count))"
+            "_CommandLineToolExecutionPlan.StandardStreamWiring(stages: \(stages.count), streamConnections: \(streamConnections.count), streamRedirections: \(streamRedirections.count))"
         }
 
         public var customMirror: Mirror {
@@ -44,7 +48,8 @@ extension _CommandLineToolExecutionPlan {
                 self,
                 children: [
                     "stages": stages,
-                    "streamConnections": streamConnections
+                    "streamConnections": streamConnections,
+                    "streamRedirections": streamRedirections
                 ],
                 displayStyle: .struct
             )
@@ -180,6 +185,18 @@ extension _CommandLineToolExecutionPlan.StandardStreamWiring {
         }
     }
 
+    /// A same-stage transformation of the standard-stream graph.
+    public enum StreamRedirection: CustomStringConvertible, Hashable, Sendable {
+        case standardErrorToStandardOutput(stageID: Stage.ID)
+
+        public var description: String {
+            switch self {
+                case .standardErrorToStandardOutput(let stageID):
+                    return "\(stageID).standardError -> \(stageID).standardOutput"
+            }
+        }
+    }
+
     public enum ValidationError: CustomStringConvertible, Hashable, Sendable, Swift.Error {
         case missingStage(Stage.ID)
         case invalidOutputEndpoint(StreamEndpoint)
@@ -265,15 +282,26 @@ extension _CommandLineToolExecutionPlan.StandardStreamWiring.Stage {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension _CommandLineToolExecutionPlan.StandardStreamWiring {
+    /// Returns a wiring in which the stage's standard error follows its standard output.
+    ///
+    /// Applying the same redirection more than once has no additional effect.
+    public func mergingStandardErrorIntoStandardOutput(
+        at stageID: Stage.ID
+    ) throws -> Self {
+        guard stages[id: stageID] != nil else {
+            throw ValidationError.missingStage(stageID)
+        }
+
+        var result = self
+        result.streamRedirections.append(.standardErrorToStandardOutput(stageID: stageID))
+
+        return result
+    }
+
     public func renderedShellPipelineCommandString(
-        mergingStandardErrorIntoStandardOutputAt stageID: Stage.ID? = nil,
         using renderer: CommandLineToolInvocation.CommandLineRenderer = .posixShellCommandLine
     ) throws -> ShellCommandString {
         try validate()
-
-        if let stageID, stages[id: stageID] == nil {
-            throw RenderingError.missingStage(stageID)
-        }
 
         let incomingStageIDs = Set(streamConnections.map(\.input.stageID))
         let rootStages = stages.filter { !incomingStageIDs.contains($0.id) }
@@ -299,12 +327,20 @@ extension _CommandLineToolExecutionPlan.StandardStreamWiring {
                 throw RenderingError.missingStageExecutionSource(currentStageID)
             }
 
-            let renderedCommand = ShellCommandString(
-                rawValue: currentStageID == stageID
-                    ? "\(commandString.rawValue) 2>&1"
-                    : commandString.rawValue,
-                dialect: commandString.dialect
-            )
+            let renderedCommand: ShellCommandString
+
+            if streamRedirections.contains(.standardErrorToStandardOutput(stageID: currentStageID)) {
+                switch commandString.dialect {
+                    case .posix:
+                        renderedCommand = ShellCommandString(
+                            rawValue: "\(commandString.rawValue) 2>&1",
+                            dialect: commandString.dialect
+                        )
+                }
+            } else {
+                renderedCommand = commandString
+            }
+
             if let precedingCommand = renderedPipeline {
                 renderedPipeline = try precedingCommand.piped(to: renderedCommand)
             } else {
