@@ -100,7 +100,7 @@ extension CommandLineTool {
     
     @discardableResult
     public func _run(
-        command commandString: _ShellCommandString,
+        command commandString: ShellCommandString,
         input: String? = nil,
         applying differences: [SystemShell.Configuration.Difference] = []
     ) async throws -> _CommandLineToolExecutionRecord<Self> {
@@ -125,7 +125,7 @@ extension CommandLineTool {
         applying differences: [SystemShell.Configuration.Difference] = []
     ) async throws -> _CommandLineToolExecutionRecord<Self> {
         try await _run(
-            command: _ShellCommandString(rawValue: commandLine),
+            command: ShellCommandString(rawValue: commandLine),
             input: input,
             applying: differences
         )

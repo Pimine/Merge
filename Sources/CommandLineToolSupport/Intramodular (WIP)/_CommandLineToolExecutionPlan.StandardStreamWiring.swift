@@ -245,7 +245,7 @@ extension _CommandLineToolExecutionPlan.StandardStreamWiring {
 extension _CommandLineToolExecutionPlan.StandardStreamWiring.Stage {
     public func renderedShellCommandString(
         using renderer: CommandLineToolInvocation.CommandLineRenderer = .posixShellCommandLine
-    ) -> _ShellCommandString? {
+    ) -> ShellCommandString? {
         if let executionSource {
             switch executionSource {
                 case .modeledInvocation(let invocation):
@@ -268,7 +268,7 @@ extension _CommandLineToolExecutionPlan.StandardStreamWiring {
     public func renderedShellPipelineCommandString(
         mergingStandardErrorIntoStandardOutputAt stageID: Stage.ID? = nil,
         using renderer: CommandLineToolInvocation.CommandLineRenderer = .posixShellCommandLine
-    ) throws -> _ShellCommandString {
+    ) throws -> ShellCommandString {
         try validate()
 
         if let stageID, stages[id: stageID] == nil {
@@ -318,7 +318,7 @@ extension _CommandLineToolExecutionPlan.StandardStreamWiring {
             currentStageID = connection.input.stageID
         }
 
-        return _ShellCommandString(
+        return ShellCommandString(
             rawValue: renderedCommands.joined(separator: " | "),
             dialect: .posix
         )

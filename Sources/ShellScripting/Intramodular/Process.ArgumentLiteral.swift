@@ -161,7 +161,7 @@ extension Process {
         }
 
         public func escapedValue(
-            for shellDialect: _ShellDialect
+            for shellDialect: ShellDialect
         ) -> String {
             switch shellDialect {
                 case .posix:

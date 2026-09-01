@@ -31,6 +31,12 @@ final class CompatibilityLeafTool: AnyCommandLineTool, CommandLineTool {
     }
 }
 
+private struct CompatibilityShellBuiltin: ShellBuiltin {
+    let commandInvocation = CommandLineToolInvocation(
+        argumentValues: ["set", "-o", "pipefail"]
+    )
+}
+
 final class EchoCompatibilityTool: AnyCommandLineTool, CommandLineTool {
     override var commandName: CommandLineTool.Name? {
         "echo"
@@ -1302,8 +1308,22 @@ struct CommandLineToolSupportTests {
         #expect(invocation.arguments.map(\.rawValue) == ["--force", "Sources"])
         #expect(invocation.commandLine == (try command.invocation))
         #expect(invocation.posixShellCommandLine == "'root' '--force' 'Sources'")
-        #expect(invocation.renderedShellCommandString(using: .posixShellCommandLine) == _ShellCommandString(rawValue: "'root' '--force' 'Sources'", dialect: .posix))
+        #expect(invocation.renderedShellCommandString(using: .posixShellCommandLine) == ShellCommandString(rawValue: "'root' '--force' 'Sources'", dialect: .posix))
         #expect(String(describing: invocation) == (try command.invocation))
+    }
+
+    @Test
+    func shellBuiltinsComposeWithCommandsInTheSameShell() throws {
+        let command = try CompatibilityShellBuiltin().followed(
+            by: ShellCommandString(rawValue: "false | true")
+        )
+
+        #expect(
+            command == ShellCommandString(
+                rawValue: "'set' '-o' 'pipefail'; false | true",
+                dialect: .posix
+            )
+        )
     }
 
     @Test

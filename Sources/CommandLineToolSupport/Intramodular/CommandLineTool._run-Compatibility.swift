@@ -125,7 +125,7 @@ extension CommandLineTool {
     @_disfavoredOverload
     @discardableResult
     public func _run(
-        command commandString: _ShellCommandString,
+        command commandString: ShellCommandString,
         input: String? = nil,
         applying differences: SystemShell.Configuration.Difference...
     ) async throws -> _CommandLineToolExecutionRecord<Self> {

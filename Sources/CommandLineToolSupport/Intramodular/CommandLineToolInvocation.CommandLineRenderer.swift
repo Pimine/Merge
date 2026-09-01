@@ -30,7 +30,7 @@ extension CommandLineToolInvocation {
 
         public func renderShellCommandString(
             _ invocation: CommandLineToolInvocation
-        ) -> _ShellCommandString {
+        ) -> ShellCommandString {
             let rawValue: String
 
             switch style {
@@ -42,7 +42,7 @@ extension CommandLineToolInvocation {
                         .joined(separator: " ")
             }
 
-            return _ShellCommandString(rawValue: rawValue, dialect: .posix)
+            return ShellCommandString(rawValue: rawValue, dialect: .posix)
         }
 
         public func render(
@@ -69,7 +69,7 @@ extension CommandLineToolInvocation {
 
     public func renderedShellCommandString(
         using renderer: CommandLineRenderer
-    ) -> _ShellCommandString {
+    ) -> ShellCommandString {
         renderer.renderShellCommandString(self)
     }
 }

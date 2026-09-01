@@ -13,7 +13,7 @@ import Merge
 extension SystemShell {
     @discardableResult
     public func run(
-        command: _ShellCommandString,
+        command: ShellCommandString,
         input: String? = nil,
         interpreter: Environment
     ) async throws -> _ProcessRunResult {
@@ -26,7 +26,7 @@ extension SystemShell {
 
     @discardableResult
     public func run(
-        command: _ShellCommandString,
+        command: ShellCommandString,
         input: String? = nil,
         environment: Environment = .zsh
     ) async throws -> _ProcessRunResult {

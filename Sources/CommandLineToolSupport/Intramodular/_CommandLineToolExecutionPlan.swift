@@ -13,7 +13,7 @@ import ShellScripting
 @available(watchOS, unavailable)
 public enum _CommandLineToolExecutionSource: CustomStringConvertible, CustomDebugStringConvertible, CustomReflectable, Hashable, Sendable {
     case modeledInvocation(CommandLineToolInvocation)
-    case shellCommandString(_ShellCommandString)
+    case shellCommandString(ShellCommandString)
     
     public var description: String {
         commandLine
@@ -62,7 +62,7 @@ public enum _CommandLineToolExecutionSource: CustomStringConvertible, CustomDebu
         }
     }
     
-    public var shellCommandString: _ShellCommandString? {
+    public var shellCommandString: ShellCommandString? {
         switch self {
             case .modeledInvocation:
                 nil
@@ -134,7 +134,7 @@ public struct _CommandLineToolExecutionRecord<Tool: AnyCommandLineTool>: CustomS
         source.invocation
     }
     
-    public var shellCommandString: _ShellCommandString? {
+    public var shellCommandString: ShellCommandString? {
         source.shellCommandString
     }
     
@@ -429,7 +429,7 @@ extension AnyCommandLineTool {
     }
     
     public func _executionPlan(
-        command commandString: _ShellCommandString,
+        command commandString: ShellCommandString,
         input: String? = nil,
         standardStreamWiring: _CommandLineToolExecutionPlan<AnyCommandLineTool>.StandardStreamWiring? = nil,
         applying differences: [SystemShell.Configuration.Difference] = []
@@ -450,7 +450,7 @@ extension AnyCommandLineTool {
         applying differences: [SystemShell.Configuration.Difference] = []
     ) -> _CommandLineToolExecutionPlan<AnyCommandLineTool> {
         _executionPlan(
-            command: _ShellCommandString(rawValue: commandLine),
+            command: ShellCommandString(rawValue: commandLine),
             input: input,
             standardStreamWiring: standardStreamWiring,
             applying: differences
@@ -459,7 +459,7 @@ extension AnyCommandLineTool {
     
     @_disfavoredOverload
     public func _executionPlan(
-        command commandString: _ShellCommandString,
+        command commandString: ShellCommandString,
         input: String? = nil,
         standardStreamWiring: _CommandLineToolExecutionPlan<AnyCommandLineTool>.StandardStreamWiring? = nil,
         applying differences: SystemShell.Configuration.Difference...

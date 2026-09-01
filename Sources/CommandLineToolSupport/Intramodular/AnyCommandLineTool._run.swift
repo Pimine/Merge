@@ -15,7 +15,7 @@ import ShellScripting
 extension AnyCommandLineTool {
     @discardableResult
     public func _run(
-        command commandString: _ShellCommandString,
+        command commandString: ShellCommandString,
         input: String? = nil,
         standardStreamWiring: _CommandLineToolExecutionPlan<AnyCommandLineTool>.StandardStreamWiring? = nil,
         applying differences: [SystemShell.Configuration.Difference] = []
@@ -37,7 +37,7 @@ extension AnyCommandLineTool {
         applying differences: [SystemShell.Configuration.Difference] = []
     ) async throws -> _CommandLineToolExecutionRecord<AnyCommandLineTool> {
         try await _run(
-            command: _ShellCommandString(rawValue: commandLine),
+            command: ShellCommandString(rawValue: commandLine),
             input: input,
             standardStreamWiring: standardStreamWiring,
             applying: differences
@@ -47,7 +47,7 @@ extension AnyCommandLineTool {
     @_disfavoredOverload
     @discardableResult
     public func _run(
-        command commandString: _ShellCommandString,
+        command commandString: ShellCommandString,
         input: String? = nil,
         standardStreamWiring: _CommandLineToolExecutionPlan<AnyCommandLineTool>.StandardStreamWiring? = nil,
         applying differences: SystemShell.Configuration.Difference...
