@@ -12,12 +12,10 @@ var package = Package(
         .watchOS(.v6),
     ],
     products: [
+        // Only the targets that build on iOS; the command-line and shell targets are macOS-only.
         .library(
             name: "Merge",
             targets: [
-                "CommandLineToolSupport",
-                "EnvironmentVariableSupport",
-                "ShellScripting",
                 "SwiftDI",
                 "Merge",
             ],
